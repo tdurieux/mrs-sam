@@ -1,102 +1,93 @@
 class Action {
-
-    constructor(type) {
-        this.type = type;
-    }
-
-    toString() {
-        return 'action ' + this.type;
-    }
+  toString() {
+    return `${this.constructor.name}`;
+  }
 }
 
 class GotoAction extends Action {
-    constructor(url) {
-        super('Goto');
-        this.url = url;
-    }
+  constructor(url) {
+    super();
+    this.url = url;
+  }
 
-    attachTo(promise) {
-        return promise.goto(this.url);
-    }
+  attachTo(promise) {
+    return promise.goto(this.url);
+  }
 
-    toString() {
-        return 'goto ' + this.url;
-    }
+  toString() {
+    return `${super.toString()}: ${this.url}`;
+  }
 }
 
 module.exports.GotoAction = GotoAction;
 
-class ClickAction extends Action {
-    constructor(selector) {
-        super('Click');
-        this.selector = selector;
-    }
+class SelectorAction extends Action {
+  constructor(selector) {
+    super();
+    this.selector = selector;
+  }
 
-    attachTo(promise) {
-        return promise.click(this.selector);
-    }
-
-    toString() {
-        return 'click ' + this.selector;
-    }
+  toString() {
+    return `${super.toString()}: ${this.selector}`;
+  }
 }
+
+class ClickAction extends SelectorAction {
+  attachTo(promise) {
+    return promise.click(this.selector);
+  }
+}
+
 module.exports.ClickAction = ClickAction;
 
-class WaitAction extends Action {
-    constructor(ms) {
-        super('Wait');
-        this.ms = ms;
-    }
+class MouseOverAction extends Action {
+  attachTo(promise) {
+    return promise.mouseover(this.selector);
+  }
+}
 
-    attachTo(promise) {
-        return promise.wait(this.ms);
-    }
+module.exports.MouseOverAction = MouseOverAction;
+
+class WaitAction extends Action {
+  constructor(ms) {
+    super();
+    this.ms = ms;
+  }
+
+  attachTo(promise) {
+    return promise.wait(this.ms);
+  }
+
+  toString() {
+    return `${super.toString()}: ${this.ms}ms`;
+  }
 }
 
 module.exports.WaitAction = WaitAction;
 
-class MouseOver extends Action {
-    constructor(selector) {
-        super('MouseOver');
-        this.selector = selector;
-    }
-
-    attachTo(promise) {
-        return promise.MouseOver(this.selector);
-    }
-}
-
-module.exports.MouseOver = MouseOver;
-
 class Scenario {
-    constructor(from) {
-        this.actions = new Array();
-        this.from = from;
-    }
+  constructor(from) {
+    this.actions = [];
+    this.from = from;
+  }
 
-    toString() {
-        var to_string = '';
-        for (var i = 0; i < this.actions.length; i++) {
-            to_string = to_string + '>' + this.actions[i]
-        }
-        return to_string;
-    }
+  toString() {
+    return `[${this.actions.join(', ')}]`;
+  }
 
-    addAction(action) {
-        this.actions.push(action);
-    }
+  addAction(action) {
+    this.actions.push(action);
+  }
 
-    attachTo(promise) {
-        var returnedPromise = promise;
-        for (var i = 0; i < this.actions.length; i++) {
-            returnedPromise = this.actions[i].attachTo(returnedPromise);
-        }
-        return returnedPromise;
-    }
+  attachTo(promise) {
+    var returnedPromise = promise;
+    this.actions.map(a => { returnedPromise = a.attachTo(returnedPromise)});
+    return returnedPromise;
+  }
 
-    get size() {
-        return this.actions.length;
-    }
+  get size() {
+    return this.actions.length;
+  }
 }
 
 module.exports.Scenario = Scenario;
