@@ -36,46 +36,49 @@ function crawlMap(map, max_action) {
   crawl(map, max_action, scenarioList);
 }
 
+function evaluate_cb() {
+  var hash = document.querySelector('body').innerHTML;
+  var a_selectors = new Array();
+  var a_links = document.getElementsByTagName('a');
+  for (var i = 0; i < a_links.length; i++) {
+    a_selectors.push(fullPath(a_links[i]));
+  }
+  return {
+    hash: hash,
+    selectors: a_selectors
+  };
+
+  function fullPath(el) {
+    var names = [];
+    while (el.parentNode) {
+      if (el.id) {
+        names.unshift('#' + el.id);
+        break;
+      } else {
+        if (el == el.ownerDocument.documentElement)
+          names.unshift(el.tagName);
+        else {
+          for (var c = 1, e = el; e.previousElementSibling; e = e.previousElementSibling, c++);
+          names.unshift(el.tagName + ":nth-child(" + c + ")");
+        }
+        el = el.parentNode;
+      }
+    }
+    return names.join(" > ");
+  }
+}
+
 function crawl(map, max_action, scenarioList) {
   if (scenarioList.length !== 0) {
     var scenario = scenarioList.pop();
     winston.info(`Retrieve state for scenario ${scenario}`);
     if (scenario.size <= max_action) {
       scenario.attachTo(nightmare)
-      .evaluate(function() {
-        var hash = document.querySelector('body').innerHTML;
-        var a_selectors = new Array();
-        var a_links = document.getElementsByTagName('a');
-        for (var i = 0; i < a_links.length; i++) {
-          a_selectors.push(fullPath(a_links[i]));
-        }
-        return {
-          hash: hash,
-          selectors: a_selectors
-        };
-
-        function fullPath(el) {
-          var names = [];
-          while (el.parentNode) {
-            if (el.id) {
-              names.unshift('#' + el.id);
-              break;
-            } else {
-              if (el == el.ownerDocument.documentElement) names.unshift(el.tagName);
-              else {
-                for (var c = 1, e = el; e.previousElementSibling; e = e.previousElementSibling, c++);
-                names.unshift(el.tagName + ":nth-child(" + c + ")");
-              }
-              el = el.parentNode;
-            }
-          }
-          return names.join(" > ");
-        }
-
-      })
+      .evaluate(evaluate_cb)
       .then(function(evaluate_res) {
         winston.info(`Extracted selectors [${evaluate_res.selectors.join(', ')}]`);
         if (!map.existNodeWithHash(evaluate_res.hash)) {
+          winston.info("New state created, extracting new scenarios");
           var to = map.createNode(evaluate_res.hash);
           var new_link = map.createLink(scenario.from, to);
           for (var i = 0; i < evaluate_res.selectors.length; i++) {
@@ -90,6 +93,7 @@ function crawl(map, max_action, scenarioList) {
             scenarioList.push(new_scenario);
           }
         } else {
+          winston.info("Reusing a previously computed state");
           var to = map.getNodeWithHash(evaluate_res.hash);
           if (!map.existLink(scenario.from, to)) {
             var link = map.createLink(scenario.from, to);
@@ -99,6 +103,7 @@ function crawl(map, max_action, scenarioList) {
         crawl(map, max_action, scenarioList);
       })
       .catch(function(err) {
+        winston.error(err);
         crawl(map, max_action, scenarioList);
       });
     } else {
