@@ -9,3 +9,6 @@ Clone the repository and perform `npm install` in the cloned folder, and in `ser
 ## Testing
 
 Go to the `server/test` folder and run `node server.js` to start the test server. Then, go to the root folder and start crawling using `npm index.js`.
+
+
+Look at index.js for crawling your own website.
