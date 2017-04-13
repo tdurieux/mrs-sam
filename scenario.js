@@ -19,7 +19,6 @@ class GotoAction extends Action {
   }
 }
 
-module.exports.GotoAction = GotoAction;
 
 class SelectorAction extends Action {
   constructor(selector) {
@@ -38,7 +37,6 @@ class ClickAction extends SelectorAction {
   }
 }
 
-module.exports.ClickAction = ClickAction;
 
 class MouseOverAction extends Action {
   attachTo(promise) {
@@ -46,7 +44,6 @@ class MouseOverAction extends Action {
   }
 }
 
-module.exports.MouseOverAction = MouseOverAction;
 
 class WaitAction extends Action {
   constructor(ms) {
@@ -63,7 +60,6 @@ class WaitAction extends Action {
   }
 }
 
-module.exports.WaitAction = WaitAction;
 
 class Scenario {
   constructor(from) {
@@ -90,4 +86,30 @@ class Scenario {
   }
 }
 
+class ScenarioManager {
+  constructor() {
+    this.executed = [];
+    this.toexecute = [];
+  }
+
+  addScenarioToExecute(scenario) {
+    this.toexecute.push(scenario);
+  }
+
+  nextScenarioToExecute() {
+    var scenario = this.toexecute.pop();
+    this.executed.push(scenario);
+    return scenario;
+  }
+
+  hasScenarioToExecute() {
+    return this.toexecute.length > 0;
+  }
+}
+
+module.exports.ScenarioManager = ScenarioManager;
 module.exports.Scenario = Scenario;
+module.exports.GotoAction = GotoAction;
+module.exports.ClickAction = ClickAction;
+module.exports.MouseOverAction = MouseOverAction;
+module.exports.WaitAction = WaitAction;

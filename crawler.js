@@ -12,6 +12,7 @@ var GotoAction = sce.GotoAction;
 var WaitAction = sce.WaitAction;
 var ClickAction = sce.ClickAction;
 var Scenario = sce.Scenario;
+var ScenarioManager = sce.ScenarioManager;
 
 
 var Nightmare = require('nightmare');
@@ -21,12 +22,12 @@ var nightmare = Nightmare({ show: true });
 
 function crawlMap(map, max_action) {
   winston.info(`Start crawling of ${map}`);
-  var scenarioList = new Array();
+  var scenarioManager = new ScenarioManager();
   var initScenario = new Scenario(map.root);
   initScenario.addAction(new GotoAction(map.url));
   initScenario.addAction(new WaitAction(2000));
-  scenarioList.push(initScenario);
-  crawl(map, max_action, scenarioList);
+  scenarioManager.addScenarioToExecute(initScenario);
+  crawl(map, max_action, scenarioManager);
 }
 
 function evaluate_cb() {
@@ -61,9 +62,9 @@ function evaluate_cb() {
   }
 }
 
-function crawl(map, max_action, scenarioList) {
-  if (scenarioList.length !== 0) {
-    var scenario = scenarioList.pop();
+function crawl(map, max_action, scenarioManager) {
+  if (scenarioManager.hasScenarioToExecute()) {
+    var scenario = scenarioManager.nextScenarioToExecute();
     winston.info(`Retrieve state for scenario ${scenario}`);
     if (scenario.size <= max_action) {
       scenario.attachTo(nightmare)
@@ -83,7 +84,7 @@ function crawl(map, max_action, scenarioList) {
             new_scenario.addAction(last_action);
             new_link.addAction(last_action);
             new_scenario.addAction(new WaitAction(1000));
-            scenarioList.push(new_scenario);
+            scenarioManager.addScenarioToExecute(new_scenario);
           }
         } else {
           winston.info("Reusing a previously computed state");
@@ -93,14 +94,14 @@ function crawl(map, max_action, scenarioList) {
             //TODO add action to the link
           }
         }
-        crawl(map, max_action, scenarioList);
+        crawl(map, max_action, scenarioManager);
       })
       .catch(function(err) {
         winston.error(err);
-        crawl(map, max_action, scenarioList);
+        crawl(map, max_action, scenarioManager);
       });
     } else {
-      crawl(map, max_action, scenarioList);
+      crawl(map, max_action, scenarioManager);
     }
   } else {
     nightmare.end()
