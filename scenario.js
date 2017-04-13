@@ -1,17 +1,12 @@
 class Action {
-
-  constructor(type) {
-    this.type = type;
-  }
-
   toString() {
-    return 'action ' + this.type;
+    return `${this.constructor.name}`;
   }
 }
 
 class GotoAction extends Action {
   constructor(url) {
-    super('Goto');
+    super();
     this.url = url;
   }
 
@@ -20,31 +15,42 @@ class GotoAction extends Action {
   }
 
   toString() {
-    return 'goto ' + this.url;
+    return `${super.toString()}: ${this.url}`;
   }
 }
 
 module.exports.GotoAction = GotoAction;
 
-class ClickAction extends Action {
+class SelectorAction extends Action {
   constructor(selector) {
-    super('Click');
+    super();
     this.selector = selector;
   }
 
+  toString() {
+    return `${super.toString()}: ${this.selector}`;
+  }
+}
+
+class ClickAction extends SelectorAction {
   attachTo(promise) {
     return promise.click(this.selector);
   }
+}
 
-  toString() {
-    return 'click ' + this.selector;
+module.exports.ClickAction = ClickAction;
+
+class MouseOverAction extends Action {
+  attachTo(promise) {
+    return promise.mouseover(this.selector);
   }
 }
-module.exports.ClickAction = ClickAction;
+
+module.exports.MouseOverAction = MouseOverAction;
 
 class WaitAction extends Action {
   constructor(ms) {
-    super('Wait');
+    super();
     this.ms = ms;
   }
 
@@ -55,31 +61,14 @@ class WaitAction extends Action {
 
 module.exports.WaitAction = WaitAction;
 
-class MouseOverAction extends Action {
-  constructor(selector) {
-    super('MouseOver');
-    this.selector = selector;
-  }
-
-  attachTo(promise) {
-    return promise.mouseover(this.selector);
-  }
-}
-
-module.exports.MouseOver = MouseOver;
-
 class Scenario {
   constructor(from) {
-    this.actions = new Array();
+    this.actions = [];
     this.from = from;
   }
 
   toString() {
-    var to_string = '';
-    for (var i = 0; i < this.actions.length; i++) {
-      to_string = to_string + '>' + this.actions[i]
-    }
-    return to_string;
+    return this.actions.map(a => a.toString).join('>');
   }
 
   addAction(action) {
@@ -88,9 +77,7 @@ class Scenario {
 
   attachTo(promise) {
     var returnedPromise = promise;
-    for (var i = 0; i < this.actions.length; i++) {
-      returnedPromise = this.actions[i].attachTo(returnedPromise);
-    }
+    this.actions.map(a => { returnedPromise = a.attachTo(returnedPromise)});
     return returnedPromise;
   }
 
