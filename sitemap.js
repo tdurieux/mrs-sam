@@ -1,110 +1,81 @@
 class Node {
-    constructor(hash) {
-        this.hash = hash;
-        this.out = new Array();
-        this.in = new Array();
-    }
+  constructor(hash) {
+    this.hash = hash;
+    this.out = [];
+    this.in = [];
+  }
 
 }
 
 module.exports.Node = Node;
 
 class Link {
-    constructor(from, to) {
-        this.from = from;
-        this.to = to;
-        this.actions = new Array();
-    }
+  constructor(from, to) {
+    this.from = from;
+    this.to = to;
+    this.actions = [];
+  }
 
-    addAction(action) {
-        this.actions.push(action);
-    }
+  addAction(action) {
+    this.actions.push(action);
+  }
 
-    getOneAction() {
-        if (actions.length !== 0) {
-            return actions[0];
-        } else {
-            return undefined;
-        }
-    }
+  getOneAction() {
+    return actions[0];
+  }
 }
 
 module.exports.Link = Link;
 
 class SiteMap {
-    constructor(url) {
-        this.url = url;
-        this.root = new Node('ROOT');
-        this.nodes = new Array();
-        this.links = new Array();
-    }
+  constructor(url) {
+    this.url = url;
+    this.root = new Node('ROOT');
+    this.nodes = [];
+    this.links = [];
+  }
 
-    existNode(node) {
-        for (var i = 0; i < this.nodes.length; i++) {
-            if (node === this.nodes[i]) {
-                return true;
-            }
-        }
-        return false;
-    }
+  existNode(node) {
+    return this.nodes.find(n => n === node) != undefined
+  }
 
-    existNodeWithHash(hash) {
-        for (var i = 0; i < this.nodes.length; i++) {
-            if (hash === this.nodes[i].hash) {
-                return true;
-            }
-        }
-        return false;
-    }
+  existNodeWithHash(hash) {
+    return this.getNodeWithHash(hash) != undefined
+  }
 
-    getNodeWithHash(hash) {
-        for (var i = 0; i < this.nodes.length; i++) {
-            if (hash === this.nodes[i].hash) {
-                return this.nodes[i];
-            }
-        }
-        return undefined;
-    }
+  getNodeWithHash(hash) {
+    return this.nodes.find(n => n.hash === hash)
+  }
 
-    existLink(from, to) {
-        for (var i = 0; i < this.links.length; i++) {
-            if (from === this.links[i].from && to === this.links[i].to) {
-                return true;
-            }
-        }
-        return false;
-    }
+  existLink(from, to) {
+    return this.getLink(from, to) != undefined
+  }
 
-    getLink(from, to) {
-        for (var i = 0; i < this.links.length; i++) {
-            if (from === this.links[i].from && to === this.links[i].to) {
-                return this.links[i];
-            }
-        }
-        return undefined;
-    }
+  getLink(from, to) {
+    return this.links.find(l => l.from === from && l.to === to)
+  }
 
-    createNode(hash) {
-        if (!this.existNodeWithHash(hash)) {
-            var node = new Node(hash);
-            this.nodes.push(node);
-            return node;
-        } else {
-            return getNodeWithHash(hash);
-        }
+  createNode(hash) {
+    if (!this.existNodeWithHash(hash)) {
+      var node = new Node(hash);
+      this.nodes.push(node);
+      return node;
+    } else {
+      return getNodeWithHash(hash);
     }
+  }
 
-    createLink(from, to) {
-        if (!this.existLink(from, to)) {
-            var link = new Link(from, to);
-            this.links.push(link);
-            from.out.push(link);
-            to.in.push(link);
-            return link;
-        } else {
-            return getLink(from, to);
-        }
+  createLink(from, to) {
+    if (!this.existLink(from, to)) {
+      var link = new Link(from, to);
+      this.links.push(link);
+      from.out.push(link);
+      to.in.push(link);
+      return link;
+    } else {
+      return getLink(from, to);
     }
+  }
 }
 
 module.exports.SiteMap = SiteMap;
