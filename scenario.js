@@ -55,14 +55,14 @@ class WaitAction extends Action {
 
 module.exports.WaitAction = WaitAction;
 
-class MouseOver extends Action {
+class MouseOverAction extends Action {
     constructor(selector) {
         super('MouseOver');
         this.selector = selector;
     }
 
     attachTo(promise) {
-        return promise.MouseOver(this.selector);
+        return promise.mouseover(this.selector);
     }
 }
 
