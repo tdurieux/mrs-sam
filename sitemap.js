@@ -76,6 +76,10 @@ class SiteMap {
       return getLink(from, to);
     }
   }
+
+  toString() {
+    return `${this.url}`;
+  }
 }
 
 module.exports.SiteMap = SiteMap;
