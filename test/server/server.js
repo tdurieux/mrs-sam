@@ -9,5 +9,5 @@ var app = express();
 app.use(express.static(application_root));
 
 app.listen(8080, function () {
-  console.log('Server is listenin (8080)!');
+  console.log('Server listening on 8080');
 });
