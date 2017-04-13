@@ -8,4 +8,4 @@ Clone the repository and perform `npm install` in the cloned folder, and in `ser
 
 ## Testing
 
-Go to the `server/test` folder and run `node index.js` to start the test server. Then, go to the root folder and start crawling using `npm index.js`.
+Go to the `server/test` folder and run `node server.js` to start the test server. Then, go to the root folder and start crawling using `npm index.js`.
