@@ -6,7 +6,7 @@ var ClickAction = sce.ClickAction;
 var Scenario = sce.Scenario;
 
 
-var mp = require('./map.js');
+var mp = require('./sitemap.js');
 var Node = mp.Node;
 var Link = mp.Link;
 var SiteMap = mp.SiteMap
