@@ -20,10 +20,14 @@ var nightmare = Nightmare({ show: true });
 
 var map = new SiteMap('http://localhost:8080');
 
+var present = require('present');
+
+var startTime = present();
+
 crawlMap(map, 5);
 
 function crawlMap(map, max_action) {
-  winston.info(`Start crawling of map ${map}`);
+  winston.info(`Start crawling of ${map}`);
   var scenarioList = new Array();
   var initScenario = new Scenario(map.root);
   initScenario.addAction(new GotoAction(map.url));
@@ -101,10 +105,14 @@ function crawl(map, max_action, scenarioList) {
       crawl(map, max_action, scenarioList);
     }
   } else {
-    nightmare.end().then(function(res) {
+    nightmare.end()
+    .then(res => {
       winston.info(`Finished crawling, found ${map.nodes.length} nodes and ${map.links.length} links`);
-    }).catch(function(err) {
-      winston.error(`Error finishing crawling: ${err}, found ${map.nodes.length} nodes and ${map.links.length} links`);
+      var endTime = present();
+      winston.info(`Process duration: ${endTime - startTime} ms`);
     })
+    .catch(err => {
+      winston.error(`Error finishing crawling: ${err}, found ${map.nodes.length} nodes and ${map.links.length} links`);
+    });
   }
 }
