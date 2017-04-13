@@ -57,6 +57,10 @@ class WaitAction extends Action {
   attachTo(promise) {
     return promise.wait(this.ms);
   }
+
+  toString() {
+    return `${super.toString()}: ${this.ms}ms`;
+  }
 }
 
 module.exports.WaitAction = WaitAction;
@@ -68,7 +72,7 @@ class Scenario {
   }
 
   toString() {
-    return this.actions.map(a => a.toString).join('>');
+    return `[${this.actions.join(', ')}]`;
   }
 
   addAction(action) {
