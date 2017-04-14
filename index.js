@@ -6,4 +6,3 @@ var map = new SiteMap('http://localhost:8080');
 const SCENARIO_MAX_SIZE = 5;
 
 crawlMap(map, SCENARIO_MAX_SIZE);
-

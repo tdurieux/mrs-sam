@@ -4,7 +4,6 @@ class Node {
     this.out = [];
     this.in = [];
   }
-
 }
 
 module.exports.Node = Node;
@@ -21,7 +20,7 @@ class Link {
   }
 
   getOneAction() {
-    return actions[0];
+    return this.actions[0];
   }
 }
 
@@ -36,23 +35,23 @@ class SiteMap {
   }
 
   existNode(node) {
-    return this.nodes.find(n => n === node) != undefined
+    return this.nodes.find(n => n === node) != undefined;
   }
 
   existNodeWithHash(hash) {
-    return this.getNodeWithHash(hash) != undefined
+    return this.getNodeWithHash(hash) != undefined;
   }
 
   getNodeWithHash(hash) {
-    return this.nodes.find(n => n.hash === hash)
+    return this.nodes.find(n => n.hash === hash);
   }
 
   existLink(from, to) {
-    return this.getLink(from, to) != undefined
+    return this.getLink(from, to) != undefined;
   }
 
   getLink(from, to) {
-    return this.links.find(l => l.from === from && l.to === to)
+    return this.links.find(l => l.from === from && l.to === to);
   }
 
   createNode(hash) {
@@ -61,7 +60,7 @@ class SiteMap {
       this.nodes.push(node);
       return node;
     } else {
-      return getNodeWithHash(hash);
+      return this.getNodeWithHash(hash);
     }
   }
 
@@ -73,7 +72,7 @@ class SiteMap {
       to.in.push(link);
       return link;
     } else {
-      return getLink(from, to);
+      return this.getLink(from, to);
     }
   }
 
