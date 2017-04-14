@@ -31,6 +31,7 @@ class SiteMap {
     this.url = url;
     this.root = new Node('ROOT');
     this.nodes = [];
+    this.nodes.push(this.root);
     this.links = [];
   }
 
@@ -78,6 +79,45 @@ class SiteMap {
 
   toString() {
     return `${this.url}`;
+  }
+
+  generateVisScript() {
+    var script = "var nodes = new vis.DataSet([";
+    var id=1;
+    var first_node = true;
+    this.nodes.forEach((node)=>{
+      node.id = id++;
+      first_node ? first_node = false : script = script +`,`;
+      script = script +`{id: ${node.id}, label: 'Node ${node.id}'}`
+    });
+    script = script +  "]);";
+
+
+    script = script + `var edges = new vis.DataSet([`;
+    var first_link = true;
+    this.links.forEach((link)=> {
+      first_link ? first_link = false : script = script +`,`;
+      script = script + `{from: ${link.from.id}, to: ${link.to.id}}`
+
+    })
+    script = script + "]);";
+
+
+    script = script + `// create a network
+    var container = document.getElementById('mynetwork');
+
+    // provide the data in the vis format
+    var data = {
+        nodes: nodes,
+        edges: edges
+    };
+    var options = {};
+
+    // initialize your network!
+    var network = new vis.Network(container, data, options);`;
+
+    return script;
+
   }
 }
 

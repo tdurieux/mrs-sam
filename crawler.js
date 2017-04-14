@@ -18,14 +18,14 @@ var ScenarioManager = sce.ScenarioManager;
 var Nightmare = require('nightmare');
 var nightmare = Nightmare({ show: true });
 
-function crawlMap(map, max_action) {
+function crawlMap(map, max_action, callback) {
     winston.info(`Start crawling of ${map}`);
     var scenarioManager = new ScenarioManager();
     var initScenario = new Scenario(map.root);
     initScenario.addAction(new GotoAction(map.url));
     initScenario.addAction(new WaitAction(2000));
     scenarioManager.addScenarioToExecute(initScenario);
-    crawl(map, max_action, scenarioManager);
+    crawl(map, max_action, scenarioManager, callback);
 }
 
 function evaluate_cb() {
@@ -65,7 +65,7 @@ function evaluate_cb() {
 
 
 
-function crawl(map, max_action, scenarioManager) {
+function crawl(map, max_action, scenarioManager, callback) {
     if (scenarioManager.hasScenarioToExecute()) {
         var scenario = scenarioManager.nextScenarioToExecute();
         winston.info(`Retrieve state for scenario ${scenario}`);
@@ -99,14 +99,14 @@ function crawl(map, max_action, scenarioManager) {
                             //TODO add action to the link
                         }
                     }
-                    crawl(map, max_action, scenarioManager);
+                    crawl(map, max_action, scenarioManager, callback);
                 })
                 .catch(function(err) {
                     winston.error(err);
-                    crawl(map, max_action, scenarioManager);
+                    crawl(map, max_action, scenarioManager, callback);
                 });
         } else {
-            crawl(map, max_action, scenarioManager);
+            crawl(map, max_action, scenarioManager, callback);
         }
     } else {
         nightmare.end()
@@ -114,9 +114,11 @@ function crawl(map, max_action, scenarioManager) {
                 winston.info(`Finished crawling, found ${map.nodes.length} nodes and ${map.links.length} links`);
                 var endTime = present();
                 winston.info(`Process duration: ${endTime - startTime} ms`);
+                callback(null, `Finished crawling, found ${map.nodes.length} nodes and ${map.links.length} links`);
             })
             .catch(err => {
                 winston.error(`Error finishing crawling: ${err}, found ${map.nodes.length} nodes and ${map.links.length} links`);
+                callback(`Error finishing crawling: ${err}, found ${map.nodes.length} nodes and ${map.links.length} links`);
             });
     }
 }
