@@ -9,10 +9,10 @@ If you want to crawl our test server, perform `npm install` in `server/test` as 
 
 ## Usage
 
-node index.js -max [num] url
+    node index.js -max [num] url
 
-max: the max number of steps performed by the crawler (default is 10)
-url: the url of the website you want to crawl (ex: http://localhost:8080)
+*max: the max number of steps performed by the crawler (default is 10)
+*url: the url of the website you want to crawl (ex: http://localhost:8080)
 
 ## Result
 
