@@ -54,7 +54,7 @@ function evaluate_cb() {
                     names.unshift(el.tagName);
                 else {
                     for (var c = 1, e = el; e.previousElementSibling; e = e.previousElementSibling, c++);
-                    names.unshift(`#${el.tagName}:nth-child(${c})`);
+                    names.unshift(`${el.tagName}:nth-child(${c})`);
                 }
                 el = el.parentNode;
             }
@@ -118,7 +118,7 @@ function crawl(map, max_action, scenarioManager, callback) {
             })
             .catch(err => {
                 winston.error(`Error finishing crawling: ${err}, found ${map.nodes.length} nodes and ${map.links.length} links`);
-                callback(`Error finishing crawling: ${err}, found ${map.nodes.length} nodes and ${map.links.length} links`);
+                callback(`Error finishing crawling: ${err}, rfound ${map.nodes.length} nodes and ${map.links.length} links`);
             });
     }
 }
