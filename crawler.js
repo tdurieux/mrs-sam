@@ -16,16 +16,18 @@ var ScenarioManager = sce.ScenarioManager;
 
 
 var Nightmare = require('nightmare');
-var nightmare = Nightmare({ show: true });
+var nightmare = {}
 
-function crawlMap(map, max_action, callback) {
-    winston.info(`Start crawling of ${map}`);
+function crawlMap(map, options, callback) {
+    nightmare = Nightmare({ show: options.show });
+
+    winston.info(`Start crawling of ${map} with ${options.maxsteps} maximun steps in ${options.time} ms`);
     var scenarioManager = new ScenarioManager();
     var initScenario = new Scenario(map.root);
     initScenario.addAction(new GotoAction(map.url));
-    initScenario.addAction(new WaitAction(2000));
+    initScenario.addAction(new WaitAction(1000));
     scenarioManager.addScenarioToExecute(initScenario);
-    crawl(map, max_action, scenarioManager, callback);
+    crawl(map, options, scenarioManager, callback);
 }
 
 function evaluate_cb() {
@@ -65,11 +67,12 @@ function evaluate_cb() {
 
 
 
-function crawl(map, max_action, scenarioManager, callback) {
-    if (scenarioManager.hasScenarioToExecute()) {
+function crawl(map, options, scenarioManager, callback) {
+    var hasTime = (present()-startTime) < options.time;
+    if (scenarioManager.hasScenarioToExecute() && hasTime) {
         var scenario = scenarioManager.nextScenarioToExecute();
-        winston.info(`Retrieve state for scenario ${scenario}`);
-        if (scenario.size <= max_action) {
+        winston.info(`Proceed: ${scenario}\n`);
+        if (scenario.size <= options.max) {
             scenario.attachTo(nightmare)
                 .evaluate(evaluate_cb)
                 .then(function(evaluate_res) {
@@ -99,14 +102,14 @@ function crawl(map, max_action, scenarioManager, callback) {
                             //TODO add action to the link
                         }
                     }
-                    crawl(map, max_action, scenarioManager, callback);
+                    crawl(map, options, scenarioManager, callback);
                 })
                 .catch(function(err) {
                     winston.error(err);
-                    crawl(map, max_action, scenarioManager, callback);
+                    crawl(map, options, scenarioManager, callback);
                 });
         } else {
-            crawl(map, max_action, scenarioManager, callback);
+            crawl(map, options, scenarioManager, callback);
         }
     } else {
         nightmare.end()
