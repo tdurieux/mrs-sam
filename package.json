@@ -25,5 +25,11 @@
     "nightmare": "^2.10.0",
     "winston": "^2.3.0",
     "present": "^1.0.0"
+  },
+  "devDependencies": {
+    "eslint": "^3.19.0",
+    "eslint-config-standard": "^10.2.0",
+    "eslint-plugin-promise": "^3.5.0",
+    "eslint-plugin-standard": "^3.0.1"
   }
 }
