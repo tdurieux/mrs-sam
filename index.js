@@ -6,4 +6,3 @@ var map = new SiteMap('http://www.promyze.com');
 const SCENARIO_MAX_SIZE = 20;
 
 crawlMap(map, SCENARIO_MAX_SIZE);
-

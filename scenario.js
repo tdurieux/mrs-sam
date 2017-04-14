@@ -77,7 +77,7 @@ class Scenario {
 
   attachTo(promise) {
     var returnedPromise = promise;
-    this.actions.map(a => { returnedPromise = a.attachTo(returnedPromise)});
+    this.actions.map(a => { returnedPromise = a.attachTo(returnedPromise); });
     return returnedPromise;
   }
 

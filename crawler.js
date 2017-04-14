@@ -18,8 +18,6 @@ var ScenarioManager = sce.ScenarioManager;
 var Nightmare = require('nightmare');
 var nightmare = Nightmare({ show: true });
 
-
-
 function crawlMap(map, max_action) {
     winston.info(`Start crawling of ${map}`);
     var scenarioManager = new ScenarioManager();
@@ -44,18 +42,19 @@ function evaluate_cb() {
         selectors: a_selectors
     };
 
+
     function fullPath(el) {
         var names = [];
         while (el.parentNode) {
             if (el.id) {
-                names.unshift('#' + el.id);
+                names.unshift(`#${el.id}`);
                 break;
             } else {
                 if (el == el.ownerDocument.documentElement)
                     names.unshift(el.tagName);
                 else {
                     for (var c = 1, e = el; e.previousElementSibling; e = e.previousElementSibling, c++);
-                    names.unshift(el.tagName + ":nth-child(" + c + ")");
+                    names.unshift(`#${el.tagName}:nth-child(${c})`);
                 }
                 el = el.parentNode;
             }
@@ -63,6 +62,8 @@ function evaluate_cb() {
         return names.join(" > ");
     }
 }
+
+
 
 function crawl(map, max_action, scenarioManager) {
     if (scenarioManager.hasScenarioToExecute()) {
@@ -119,6 +120,8 @@ function crawl(map, max_action, scenarioManager) {
             });
     }
 }
+
+
 
 
 module.exports.crawlMap = crawlMap;
