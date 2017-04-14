@@ -33,15 +33,21 @@ function crawlMap(map, options, callback) {
 function evaluate_cb() {
     var hostname = window.location.hostname;
     var hash = document.querySelector('body').innerHTML;
-    var a_selectors = new Array();
+    var selectors = new Array();
     var a_links = document.getElementsByTagName('a');
     for (var i = 0; i < a_links.length; i++) {
-        a_selectors.push(fullPath(a_links[i]));
+        if (!isMailTo(a_links[i])) selectors.push(fullPath(a_links[i]));
     }
+
+    var img_links = document.getElementsByTagName('img');
+    for (var i = 0; i < img_links.length; i++) {
+        selectors.push(fullPath(img_links[i]));
+    }
+
     return {
         hostname: hostname,
         hash: hash,
-        selectors: a_selectors
+        selectors: selectors
     };
 
 
@@ -62,6 +68,10 @@ function evaluate_cb() {
             }
         }
         return names.join(" > ");
+    }
+
+    function isMailTo(a_link) {
+        return a_link.href.includes('mailto');
     }
 }
 
