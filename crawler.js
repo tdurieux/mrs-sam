@@ -82,7 +82,7 @@ function crawl(map, options, scenarioManager, callback) {
     if (scenarioManager.hasScenarioToExecute() && hasTime) {
         var scenario = scenarioManager.nextScenarioToExecute();
         winston.info(`Proceed: ${scenario}\n`);
-        if (scenario.size <= options.max) {
+        if (scenario.size <= options.maxsteps) {
             scenario.attachTo(nightmare)
                 .evaluate(evaluate_cb)
                 .then(function(evaluate_res) {
@@ -106,11 +106,12 @@ function crawl(map, options, scenarioManager, callback) {
                         }
                     } else {
                         winston.info("Reusing a previously computed state");
-                        var to = map.getNodeWithHash(evaluate_res.hash);
-                        if (!map.existLink(scenario.from, to)) {
-                            var link = map.createLink(scenario.from, to);
+                        //var to = map.getNodeWithHash(evaluate_res.hash);
+                        //if (to) map.createLink(scenario.from,to);
+                        //if (!map.existLink(scenario.from, to)) {
+                        //    var link = map.createLink(scenario.from, to);
                             //TODO add action to the link
-                        }
+                        //}
                     }
                     crawl(map, options, scenarioManager, callback);
                 })
