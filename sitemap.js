@@ -114,7 +114,11 @@ class SiteMap {
         edges: edges
     };
     var options = {
-        arrow.to: true
+        edges: {
+          arrows: {
+            to: true
+          }
+        }
     };
 
     // initialize your network!
