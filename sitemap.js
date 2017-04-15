@@ -113,7 +113,9 @@ class SiteMap {
         nodes: nodes,
         edges: edges
     };
-    var options = {};
+    var options = {
+        arrow.to: true
+    };
 
     // initialize your network!
     var network = new vis.Network(container, data, options);`;

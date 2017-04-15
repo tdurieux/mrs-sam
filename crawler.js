@@ -31,28 +31,36 @@ function crawlMap(map, options, callback) {
     crawl(map, options, scenarioManager, callback);
 }
 
-function evaluate_cb() {
+function htmlAnalysis() {
     var hostname = window.location.hostname;
-    var hash = document.querySelector('body').innerHTML;
-    var selectors = new Array();
-    var a_links = document.getElementsByTagName('a');
-    for (var i = 0; i < a_links.length; i++) {
-        if (!isMailTo(a_links[i])) selectors.push(fullPath(a_links[i]));
-    }
-
-    var img_links = document.getElementsByTagName('img');
-    for (var i = 0; i < img_links.length; i++) {
-        selectors.push(fullPath(img_links[i]));
-    }
 
     return {
         hostname: hostname,
-        hash: hash,
-        selectors: selectors
+        hash: generateHash(),
+        selectors: grabSelector()
     };
 
+    function generateHash() {
+        return document.querySelector('body').innerHTML.replace(/\s{2,10}/g, ' ');
+    }
 
-    function fullPath(el) {
+    function grabSelector() {
+        var selectors = new Array();
+        var a_links = document.getElementsByTagName('a');
+        for (var i = 0; i < a_links.length; i++) {
+            if (!isMailTo(a_links[i])) selectors.push(computeSelector(a_links[i]));
+        }
+
+        var img_links = document.getElementsByTagName('img');
+        for (var i = 0; i < img_links.length; i++) {
+            selectors.push(computeSelector(img_links[i]));
+        }
+        return selectors;
+
+    }
+
+
+    function computeSelector(el) {
         var names = [];
         while (el.parentNode) {
             if (el.id) {
@@ -79,13 +87,13 @@ function evaluate_cb() {
 
 
 function crawl(map, options, scenarioManager, callback) {
-    var hasTime = (present()-startTime) < (options.time * 60 * 1000);
+    var hasTime = (present() - startTime) < (options.time * 60 * 1000);
     if (scenarioManager.hasScenarioToExecute() && hasTime) {
         var scenario = scenarioManager.nextScenarioToExecute();
         winston.info(`Proceed: ${scenario}\n`);
         if (scenario.size <= options.maxsteps) {
             scenario.attachTo(nightmare)
-                .evaluate(evaluate_cb)
+                .evaluate(htmlAnalysis)
                 .then(function(evaluate_res) {
                     winston.info(`Extracted selectors [${evaluate_res.selectors.join(', ')}]`);
                     if (!map.existNodeWithHash(evaluate_res.hash)) {
@@ -93,6 +101,7 @@ function crawl(map, options, scenarioManager, callback) {
                         var to = map.createNode(evaluate_res.hash);
                         //nightmare.screenshot(`./test/server/img/node${to.id}.png`).then();
                         var new_link = map.createLink(scenario.from, to);
+                        new_link.scenario = scenario;
                         if (map.url.includes(evaluate_res.hostname)) {
                             for (var i = 0; i < evaluate_res.selectors.length; i++) {
                                 var new_scenario = new Scenario(to);
@@ -109,10 +118,13 @@ function crawl(map, options, scenarioManager, callback) {
                     } else {
                         winston.info("Reusing a previously computed state");
                         var to = map.getNodeWithHash(evaluate_res.hash);
-                        if (to) map.createLink(scenario.from,to);
+                        if (to) {
+                            var link = map.createLink(scenario.from, to);
+                            link.scenario = scenario;
+                        }
                         //if (!map.existLink(scenario.from, to)) {
                         //    var link = map.createLink(scenario.from, to);
-                            //TODO add action to the link
+                        //TODO add action to the link
                         //}
                     }
                     crawl(map, options, scenarioManager, callback);
