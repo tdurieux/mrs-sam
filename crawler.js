@@ -21,11 +21,12 @@ var nightmare = {}
 function crawlMap(map, options, callback) {
     nightmare = Nightmare({ show: options.show });
 
-    winston.info(`Start crawling of ${map} with ${options.maxsteps} maximun steps in ${options.time} ms`);
+    winston.info(`Start crawling of ${map} with ${options.maxsteps} maximun steps in ${options.time} min`);
     var scenarioManager = new ScenarioManager();
     var initScenario = new Scenario(map.root);
+    initScenario.from = map.root;
     initScenario.addAction(new GotoAction(map.url));
-    initScenario.addAction(new WaitAction(1000));
+    initScenario.addAction(new WaitAction(2000));
     scenarioManager.addScenarioToExecute(initScenario);
     crawl(map, options, scenarioManager, callback);
 }
@@ -78,7 +79,7 @@ function evaluate_cb() {
 
 
 function crawl(map, options, scenarioManager, callback) {
-    var hasTime = (present()-startTime) < options.time;
+    var hasTime = (present()-startTime) < (options.time * 60 * 1000);
     if (scenarioManager.hasScenarioToExecute() && hasTime) {
         var scenario = scenarioManager.nextScenarioToExecute();
         winston.info(`Proceed: ${scenario}\n`);
@@ -90,6 +91,7 @@ function crawl(map, options, scenarioManager, callback) {
                     if (!map.existNodeWithHash(evaluate_res.hash)) {
                         winston.info("New state created, extracting new scenarios");
                         var to = map.createNode(evaluate_res.hash);
+                        //nightmare.screenshot(`./test/server/img/node${to.id}.png`).then();
                         var new_link = map.createLink(scenario.from, to);
                         if (map.url.includes(evaluate_res.hostname)) {
                             for (var i = 0; i < evaluate_res.selectors.length; i++) {
@@ -106,8 +108,8 @@ function crawl(map, options, scenarioManager, callback) {
                         }
                     } else {
                         winston.info("Reusing a previously computed state");
-                        //var to = map.getNodeWithHash(evaluate_res.hash);
-                        //if (to) map.createLink(scenario.from,to);
+                        var to = map.getNodeWithHash(evaluate_res.hash);
+                        if (to) map.createLink(scenario.from,to);
                         //if (!map.existLink(scenario.from, to)) {
                         //    var link = map.createLink(scenario.from, to);
                             //TODO add action to the link

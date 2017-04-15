@@ -29,10 +29,11 @@ module.exports.Link = Link;
 class SiteMap {
   constructor(url) {
     this.url = url;
-    this.root = new Node('ROOT');
     this.nodes = [];
-    this.nodes.push(this.root);
     this.links = [];
+    this.root = new Node(`ROOT of ${this.url}`);
+    this.root.id = 0;
+    this.nodes.push(this.root);
   }
 
   existNode(node) {
@@ -58,6 +59,7 @@ class SiteMap {
   createNode(hash) {
     if (!this.existNodeWithHash(hash)) {
       var node = new Node(hash);
+      node.id = this.nodes.length;
       this.nodes.push(node);
       return node;
     } else {
@@ -86,7 +88,7 @@ class SiteMap {
     var id=1;
     var first_node = true;
     this.nodes.forEach((node)=>{
-      node.id = id++;
+      //node.id = id++;
       first_node ? first_node = false : script = script +`,`;
       script = script +`{id: ${node.id}, label: 'Node ${node.id}'}`
     });
