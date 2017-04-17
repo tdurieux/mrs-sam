@@ -84,45 +84,27 @@ class SiteMap {
   }
 
   generateVisScript() {
-    var script = "var nodes = new vis.DataSet([";
-    var id=1;
+    var script = `var site_url = "${this.url}"\n\n`;
+
+    script = script + "var nodes = new vis.DataSet([\n";
+
     var first_node = true;
     this.nodes.forEach((node)=>{
-      //node.id = id++;
-      first_node ? first_node = false : script = script +`,`;
-      script = script +`{id: ${node.id}, label: 'Node ${node.id}'}`
+      //node.node_id = node_id++;
+      first_node ? first_node = false : script = script +`,\n`;
+      script = script +`\t{id: ${node.id}, label: 'Node ${node.id}'}`
     });
-    script = script +  "]);";
+    script = script +  "]);\n\n";
 
 
-    script = script + `var edges = new vis.DataSet([`;
+    script = script + `var edges = new vis.DataSet([\n`;
     var first_link = true;
     this.links.forEach((link)=> {
-      first_link ? first_link = false : script = script +`,`;
-      script = script + `{from: ${link.from.id}, to: ${link.to.id}}`
+      first_link ? first_link = false : script = script +`,\n`;
+      script = script + `\t{from: ${link.from.id}, to: ${link.to.id}}`
 
     })
-    script = script + "]);";
-
-
-    script = script + `// create a network
-    var container = document.getElementById('mynetwork');
-
-    // provide the data in the vis format
-    var data = {
-        nodes: nodes,
-        edges: edges
-    };
-    var options = {
-        edges: {
-          arrows: {
-            to: true
-          }
-        }
-    };
-
-    // initialize your network!
-    var network = new vis.Network(container, data, options);`;
+    script = script + "]);\n\n";
 
     return script;
 

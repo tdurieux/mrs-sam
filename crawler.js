@@ -95,14 +95,15 @@ function crawl(map, options, scenarioManager, callback) {
             scenario.attachTo(nightmare)
                 .evaluate(htmlAnalysis)
                 .then(function(evaluate_res) {
-                    winston.info(`Extracted selectors [${evaluate_res.selectors.join(', ')}]`);
+                    winston.info(`A scenario has been executed`);
                     if (!map.existNodeWithHash(evaluate_res.hash)) {
-                        winston.info("New state created, extracting new scenarios");
+                        winston.info("A new node was created representing the end of that scenario");
                         var to = map.createNode(evaluate_res.hash);
                         //nightmare.screenshot(`./test/server/img/node${to.id}.png`).then();
                         var new_link = map.createLink(scenario.from, to);
                         new_link.scenario = scenario;
                         if (map.url.includes(evaluate_res.hostname)) {
+                            winston.info(`${evaluate_res.selectors.length} selectors have been extracted and transformed into new scenario`);
                             for (var i = 0; i < evaluate_res.selectors.length; i++) {
                                 var new_scenario = new Scenario(to);
                                 for (var j = 0; j < scenario.actions.length; j++) {
@@ -116,7 +117,7 @@ function crawl(map, options, scenarioManager, callback) {
                             }
                         }
                     } else {
-                        winston.info("Reusing a previously computed state");
+                        winston.info("An existing node corresponds to the end of that scenario");
                         var to = map.getNodeWithHash(evaluate_res.hash);
                         if (to) {
                             var link = map.createLink(scenario.from, to);
