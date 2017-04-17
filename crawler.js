@@ -18,8 +18,25 @@ var ScenarioManager = sce.ScenarioManager;
 var Nightmare = require('nightmare');
 var nightmare = {}
 
+
+var response_error = [];
+
 function crawlMap(map, options, callback) {
     nightmare = Nightmare({ show: options.show });
+
+
+    nightmare.on('console', function(type, arguments) {
+            //console.log('CONSOLE');
+        })
+        .on('page', function(type, message, stack) {
+            //console.log('PAGE');
+        })
+        .on('did-get-response-details', function(event, status, newURL, originalURL, code, referrer, headers, resourceType ) {
+            if (code >= HTML_ERROR_CODE) {
+                winston.error(`An error HTTP has been received (code: ${code}, url:${newURL})`);
+                response_error.push(code);
+            }
+        });
 
     winston.info(`Start crawling of ${map} with ${options.maxsteps} maximun steps in ${options.time} min`);
     var scenarioManager = new ScenarioManager();
@@ -97,9 +114,9 @@ function crawl(map, options, scenarioManager, callback) {
             scenario.attachTo(nightmare)
                 .evaluate(htmlAnalysis)
                 .then(function(evaluate_res) {
-                    winston.info(`A scenario has been executed and the output has been analyzed`);
+                    winston.info(`A scenario has been executed and after the HTML has been analyzed`);
                     if (!map.existNodeWithHash(evaluate_res.hash)) {
-                        winston.info("A new node was created representing the end of that scenario");
+                        winston.info("A new node was created representing the web page after that scenario");
 
                         if (map.url.includes(evaluate_res.hostname)) {
                             var to = map.createNode(evaluate_res.hash);
@@ -107,6 +124,13 @@ function crawl(map, options, scenarioManager, callback) {
                             var new_link = map.createLink(scenario.from, to);
                             new_link.last_action = scenario.getLastAction();
                             to.inside = true;
+                            if (response_error.length >0 ) {
+                                to.error = true;
+                                to.error.code = response_error.shift().code;
+                                response_error = [];
+                            }
+
+
                             winston.info(`${evaluate_res.selectors.length} selectors have been extracted and transformed into new scenario`);
                             for (var i = 0; i < evaluate_res.selectors.length; i++) {
                                 var new_scenario = new Scenario(to);
@@ -143,11 +167,6 @@ function crawl(map, options, scenarioManager, callback) {
                 })
                 .catch(function(err) {
                     winston.error(err);
-                    var to = map.createNode(err);
-                    var new_link = map.createLink(scenario.from, to);
-                    to.inside = true;
-                    to.error = true;
-                    new_link.last_action = scenario.getLastAction();
                     crawl(map, options, scenarioManager, callback);
                 });
         } else {

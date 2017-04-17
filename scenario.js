@@ -106,7 +106,7 @@ class ScenarioManager {
   }
 
   nextScenarioToExecute() {
-    var scenario = this.toexecute.pop();
+    var scenario = this.toexecute.shift();
     this.executed.push(scenario);
     return scenario;
   }
