@@ -41,7 +41,8 @@ function htmlAnalysis() {
     };
 
     function generateHash() {
-        return document.querySelector('body').innerHTML.replace(/\s{2,10}/g, ' ');
+        //return document.querySelector('body').innerHTML.replace(/\s{2,10}/g, ' ');
+        return document.body.innerHTML.replace(/\s{2,10}/g, ' ');
     }
 
     function grabSelector() {

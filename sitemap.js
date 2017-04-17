@@ -92,7 +92,7 @@ class SiteMap {
     this.nodes.forEach((node)=>{
       //node.node_id = node_id++;
       first_node ? first_node = false : script = script +`,\n`;
-      script = script +`\t{id: ${node.id}, label: 'Node ${node.id}, hash: ${JSON.stringify(node.hash,null,4)}'}`
+      script = script +`\t{id: ${node.id}, label: 'Node ${node.id}', hash: ${JSON.stringify(node.hash,null,4)}}`
     });
     script = script +  "]);\n\n";
 
