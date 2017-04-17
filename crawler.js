@@ -32,6 +32,7 @@ function crawlMap(map, options, callback) {
             //console.log('PAGE');
         })
         .on('did-get-response-details', function(event, status, newURL, originalURL, code, referrer, headers, resourceType ) {
+            const HTML_ERROR_CODE = 400;
             if (code >= HTML_ERROR_CODE) {
                 winston.error(`An error HTTP has been received (code: ${code}, url:${newURL})`);
                 response_error.push(code);
