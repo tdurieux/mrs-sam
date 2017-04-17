@@ -91,7 +91,8 @@ function crawl(map, options, scenarioManager, callback) {
     if (scenarioManager.hasScenarioToExecute() && hasTime) {
         var scenario = scenarioManager.nextScenarioToExecute();
         winston.info(`Proceed: ${scenario}\n`);
-        if (scenario.size <= (options.maxsteps*2)) {
+        const wait_actions_factor = 2;
+        if (scenario.size <= (options.maxsteps*wait_actions_factor)) {
             scenario.attachTo(nightmare)
                 .evaluate(htmlAnalysis)
                 .then(function(evaluate_res) {

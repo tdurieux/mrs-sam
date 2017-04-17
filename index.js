@@ -3,7 +3,7 @@ var argv = require('yargs')
 
 var options = {
 	maxsteps: argv.maxsteps || 5,
-	time: argv.time || 300000,
+	time: argv.time || 3,
 	wait: argv.wait || 1000,
 	show:argv.show || true,
 };
