@@ -5,7 +5,7 @@ var options = {
 	maxsteps: argv.maxsteps || 5,
 	time: argv.time || 3,
 	wait: argv.wait || 1000,
-	show:argv.show || true,
+	show:argv.show || false,
 };
 
 var url = argv.url || 'http://localhost:8080';
@@ -24,5 +24,5 @@ var map = new SiteMap(url);
 
 crawlMap(map, options, function(err, succ) {
     var fs = require('fs');
-    fs.writeFile('./test/server/mapsite.js', map.generateVisScript());
+    fs.writeFile('./test/server/computed_map.js', map.generateVisScript());
 });

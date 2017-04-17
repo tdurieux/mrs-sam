@@ -93,18 +93,20 @@ function crawl(map, options, scenarioManager, callback) {
         var scenario = scenarioManager.nextScenarioToExecute();
         winston.info(`Proceed: ${scenario}\n`);
         const wait_actions_factor = 2;
-        if (scenario.size <= (options.maxsteps*wait_actions_factor)) {
+        if (scenario.size <= (options.maxsteps * wait_actions_factor)) {
             scenario.attachTo(nightmare)
                 .evaluate(htmlAnalysis)
                 .then(function(evaluate_res) {
                     winston.info(`A scenario has been executed and the output has been analyzed`);
                     if (!map.existNodeWithHash(evaluate_res.hash)) {
                         winston.info("A new node was created representing the end of that scenario");
-                        var to = map.createNode(evaluate_res.hash);
-                        //nightmare.screenshot(`./test/server/img/node${to.id}.png`).then();
-                        var new_link = map.createLink(scenario.from, to);
-                        new_link.last_action = scenario.getLastAction();
+
                         if (map.url.includes(evaluate_res.hostname)) {
+                            var to = map.createNode(evaluate_res.hash);
+                            //nightmare.screenshot(`./test/server/img/node${to.id}.png`).then();
+                            var new_link = map.createLink(scenario.from, to);
+                            new_link.last_action = scenario.getLastAction();
+                            to.inside = true;
                             winston.info(`${evaluate_res.selectors.length} selectors have been extracted and transformed into new scenario`);
                             for (var i = 0; i < evaluate_res.selectors.length; i++) {
                                 var new_scenario = new Scenario(to);
@@ -118,6 +120,11 @@ function crawl(map, options, scenarioManager, callback) {
                                 scenarioManager.addScenarioToExecute(new_scenario);
                             }
                         } else {
+                            var to = map.createNode(evaluate_res.hostname);
+                            //nightmare.screenshot(`./test/server/img/node${to.id}.png`).then();
+                            var new_link = map.createLink(scenario.from, to);
+                            new_link.last_action = scenario.getLastAction();
+                            to.inside = false;
                             winston.info(`The end of the scenario is in another host. The crawler won't go further.`);
                         }
                     } else {
@@ -136,6 +143,11 @@ function crawl(map, options, scenarioManager, callback) {
                 })
                 .catch(function(err) {
                     winston.error(err);
+                    var to = map.createNode(err);
+                    var new_link = map.createLink(scenario.from, to);
+                    to.inside = true;
+                    to.error = true;
+                    new_link.last_action = scenario.getLastAction();
                     crawl(map, options, scenarioManager, callback);
                 });
         } else {

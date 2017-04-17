@@ -32,6 +32,8 @@ class SiteMap {
     this.nodes = [];
     this.links = [];
     this.root = new Node(`ROOT of ${this.url}`);
+    this.root.root = true;
+    this.root.inside = true;
     this.root.id = 0;
     this.nodes.push(this.root);
   }
@@ -60,6 +62,7 @@ class SiteMap {
     if (!this.existNodeWithHash(hash)) {
       var node = new Node(hash);
       node.id = this.nodes.length;
+      node.root = false;
       this.nodes.push(node);
       return node;
     } else {
@@ -90,9 +93,19 @@ class SiteMap {
 
     var first_node = true;
     this.nodes.forEach((node)=>{
+      var color = "blue";
+      
+      if (!node.inside) color = "orange";
+      if (node.error) color = "red";
+      if (node.root) color = "black";
+      
       //node.node_id = node_id++;
       first_node ? first_node = false : script = script +`,\n`;
-      script = script +`\t{id: ${node.id}, label: 'Node ${node.id}', hash: ${JSON.stringify(node.hash,null,4)}}`
+      script = script +`\t{id: ${node.id}, 
+              label: 'Node ${node.id}',
+              color: '${color}',
+              hash: ${JSON.stringify(node.hash,null,4)}
+            }`
     });
     script = script +  "]);\n\n";
 
