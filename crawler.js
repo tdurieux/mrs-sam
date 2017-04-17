@@ -26,7 +26,7 @@ function crawlMap(map, options, callback) {
     var initScenario = new Scenario(map.root);
     initScenario.from = map.root;
     initScenario.addAction(new GotoAction(map.url));
-    initScenario.addAction(new WaitAction(2000));
+    initScenario.addAction(new WaitAction(options.wait));
     scenarioManager.addScenarioToExecute(initScenario);
     crawl(map, options, scenarioManager, callback);
 }
@@ -91,17 +91,17 @@ function crawl(map, options, scenarioManager, callback) {
     if (scenarioManager.hasScenarioToExecute() && hasTime) {
         var scenario = scenarioManager.nextScenarioToExecute();
         winston.info(`Proceed: ${scenario}\n`);
-        if (scenario.size <= options.maxsteps) {
+        if (scenario.size <= (options.maxsteps*2)) {
             scenario.attachTo(nightmare)
                 .evaluate(htmlAnalysis)
                 .then(function(evaluate_res) {
-                    winston.info(`A scenario has been executed`);
+                    winston.info(`A scenario has been executed and the output has been analyzed`);
                     if (!map.existNodeWithHash(evaluate_res.hash)) {
                         winston.info("A new node was created representing the end of that scenario");
                         var to = map.createNode(evaluate_res.hash);
                         //nightmare.screenshot(`./test/server/img/node${to.id}.png`).then();
                         var new_link = map.createLink(scenario.from, to);
-                        new_link.scenario = scenario;
+                        new_link.last_action = scenario.getLastAction();
                         if (map.url.includes(evaluate_res.hostname)) {
                             winston.info(`${evaluate_res.selectors.length} selectors have been extracted and transformed into new scenario`);
                             for (var i = 0; i < evaluate_res.selectors.length; i++) {
@@ -112,16 +112,18 @@ function crawl(map, options, scenarioManager, callback) {
                                 var last_action = new ClickAction(evaluate_res.selectors[i]);
                                 new_scenario.addAction(last_action);
                                 new_link.addAction(last_action);
-                                new_scenario.addAction(new WaitAction(1000));
+                                new_scenario.addAction(new WaitAction(options.wait));
                                 scenarioManager.addScenarioToExecute(new_scenario);
                             }
+                        } else {
+                            winston.info(`The end of the scenario is in another host. The crawler won't go further.`);
                         }
                     } else {
                         winston.info("An existing node corresponds to the end of that scenario");
                         var to = map.getNodeWithHash(evaluate_res.hash);
                         if (to) {
                             var link = map.createLink(scenario.from, to);
-                            link.scenario = scenario;
+                            link.last_action = scenario.getLastAction();
                         }
                         //if (!map.existLink(scenario.from, to)) {
                         //    var link = map.createLink(scenario.from, to);

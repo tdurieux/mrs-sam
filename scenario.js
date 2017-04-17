@@ -84,6 +84,15 @@ class Scenario {
   get size() {
     return this.actions.length;
   }
+
+  getLastAction() {
+    if ((this.actions.length) - 2 >= 0) {
+      return this.actions[this.actions.length - 2];
+    } else {
+      return undefined;
+    }
+
+  }
 }
 
 class ScenarioManager {

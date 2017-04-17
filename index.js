@@ -1,9 +1,10 @@
 var argv = require('yargs')
-			.usage('$0 index.js --maxsteps=[num] --time=[num] --show=[boolean] --url=[string]').argv;
+			.usage('$0 index.js --maxsteps=[num] --time=[num] --show=[boolean] --wait=[num] --url=[string]').argv;
 
 var options = {
 	maxsteps: argv.maxsteps || 5,
 	time: argv.time || 300000,
+	wait: argv.wait || 1000,
 	show:argv.show || true,
 };
 

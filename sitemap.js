@@ -92,7 +92,7 @@ class SiteMap {
     this.nodes.forEach((node)=>{
       //node.node_id = node_id++;
       first_node ? first_node = false : script = script +`,\n`;
-      script = script +`\t{id: ${node.id}, label: 'Node ${node.id}'}`
+      script = script +`\t{id: ${node.id}, label: 'Node ${node.id}, hash: ${JSON.stringify(node.hash,null,4)}'}`
     });
     script = script +  "]);\n\n";
 
@@ -101,7 +101,7 @@ class SiteMap {
     var first_link = true;
     this.links.forEach((link)=> {
       first_link ? first_link = false : script = script +`,\n`;
-      script = script + `\t{from: ${link.from.id}, to: ${link.to.id}}`
+      script = script + `\t{from: ${link.from.id}, to: ${link.to.id}, last_action: "${link.last_action}"}`
 
     })
     script = script + "]);\n\n";

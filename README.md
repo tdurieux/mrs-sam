@@ -9,12 +9,13 @@ If you want to crawl our test server, perform `npm install` in `server/test` as 
 
 ## Usage
 
-    node index.js --maxsteps=[num] --time=[num] --show=[boolean] --url=[string]
+    node index.js --maxsteps=[num] --time=[num] --show=[boolean] --wait=[num] --url=[string]
 
 
-* --maxsteps (-m): the max number of steps performed by the crawler (default is 10)
-* --time (-t): the time (in ms) for the crawler to crawl
-* --show (-s): show the crawler (Nightmare)
+* --maxsteps: the max number of steps performed by the crawler (default is 10)
+* --time: the time (in ms) for the crawler to crawl
+* --show: show the crawler (Nightmare)
+* --wait: the time in ms Mrs. Same is waiting between two actions.
 * --url: the url of the website you want to crawl (ex: http://localhost:8080)
 
 ## Result
