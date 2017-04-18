@@ -12,6 +12,7 @@ var GotoAction = sce.GotoAction;
 var WaitAction = sce.WaitAction;
 var ClickAction = sce.ClickAction;
 var ScrollToAction = sce.ScrollToAction;
+var MouseOverAction = sce.MouseOverAction;
 var Scenario = sce.Scenario;
 var ScenarioManager = sce.ScenarioManager;
 
@@ -96,9 +97,8 @@ function executeNextScenario(map, callback) {
     var scenarioManager = map.scenarioManager;
     var scenario = scenarioManager.nextScenarioToExecute();
 
-    winston.info(`Proceed: ${scenario}\n`);
-
     if (scenario.size <= (map.options.maxsteps * WAIT_ACTIONS_POWER_FACTOR)) {
+        winston.info(`Proceed: ${scenario}\n`);
         scenario.attachTo(nightmare)
             .evaluate(htmlAnalysis)
             .then(function(analysis_result) {
@@ -221,7 +221,7 @@ function markError(map, link) {
 function addNewScenari(map, evaluate_res, current_scenario, current_node) {
     addNewClickScenari(map, evaluate_res, current_scenario, current_node);
     addScrollToScenari(map, evaluate_res, current_scenario, current_node);
-    addMouseHoverScenari(map, evaluate_res, current_scenario, current_node);
+    addMouseOverScenari(map, evaluate_res, current_scenario, current_node);
     addWaitScenari(map, evaluate_res, current_scenario, current_node);
 }
 
@@ -252,7 +252,19 @@ function addScrollToScenari(map, evaluate_res, current_scenario, current_node) {
     scenarioManager.addScenarioToExecute(new_scenario);
 }
 
-function addMouseHoverScenari(map, evaluate_res, current_scenario, current_node) {}
+function addMouseOverScenari(map, evaluate_res, current_scenario, current_node) {
+    var scenarioManager = map.scenarioManager;
+    for (var i = 0; i < evaluate_res.selectors.length; i++) {
+        var new_scenario = new Scenario(current_node);
+        for (var j = 0; j < current_scenario.actions.length; j++) {
+            new_scenario.addAction(current_scenario.actions[j]);
+        }
+        var last_action = new MouseOverAction(evaluate_res.selectors[i]);
+        new_scenario.addAction(last_action);
+        new_scenario.addAction(new WaitAction(map.options.wait));
+        scenarioManager.addScenarioToExecute(new_scenario);
+    }
+}
 
 function addWaitScenari(map, evaluate_res, current_scenario, current_node) {
     var scenarioManager = map.scenarioManager;

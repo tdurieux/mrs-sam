@@ -55,7 +55,7 @@ class ScrollToAction extends Action {
     }
 
     attachTo(promise) {
-        return promise.scrollTo(this.x,this.y);
+        return promise.scrollTo(this.x, this.y);
     }
 
     toString() {
@@ -126,7 +126,9 @@ class ScenarioManager {
     }
 
     nextScenarioToExecute() {
-        var scenario = this.toexecute.shift();
+        var id = Math.floor(Math.random() * this.toexecute.length);
+        var scenario = this.toexecute[id]; 
+        this.toexecute.splice(id, 1);
         this.executed.push(scenario);
         this.executed_scenario++;
         return scenario;
@@ -137,11 +139,11 @@ class ScenarioManager {
     }
 
     numberOfScenarioToExecute() {
-      return this.toexecute.length;
+        return this.toexecute.length;
     }
 
     numberOfExecutedScenario() {
-      return this.executed_scenario;
+        return this.executed_scenario;
     }
 }
 

@@ -5,12 +5,10 @@ document.getElementById('wait_option').innerHTML = map_options.wait;
 document.getElementById('date').innerHTML = map_date;
 document.getElementById('executed_scenario').innerHTML = executed_scenario;
 document.getElementById('left_scenario').innerHTML = left_scenario;
+
 var container = document.getElementById('mynetwork');
+var data = {nodes: map_nodes,edges: map_edges};
 
-
-// provide the data in the vis format
-  
-var data = {     nodes: map_nodes,     edges: map_edges   };  
 var options = {
     edges: {
         arrows: {
@@ -22,7 +20,6 @@ var options = {
 
 
 // initialize your network!
-  
 var network = new vis.Network(container, data, options);
 
 network.on("hoverNode", function(params) {
