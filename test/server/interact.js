@@ -5,7 +5,7 @@ var container = document.getElementById('mynetwork');
 
 // provide the data in the vis format
   
-var data = {     nodes: nodes,     edges: edges   };  
+var data = {     nodes: map_nodes,     edges: map_edges   };  
 var options = {
     edges: {
         arrows: {
@@ -30,17 +30,34 @@ network.on("hoverEdge", function(params) {
 });
 
 function showNode(node_id) {
-	var node  = nodes.get(node_id);
-	var html  = `<h2>${node.label}</h2>
-    state : <xmp>${node.hash}</xmp>`;
+	var node  = map_nodes.get(node_id);
+	var html  = `<h2>${node.label}</h2>`
+    html = html + `state : <xmp>${node.hash}</xmp>`;
 	return html;
 }
 
 function showEdge(edge_id) {
 	//var html  = `<h2>Node ${getNodeById(node_id).label}`;
-	var edge = edges.get(edge_id);
+	var edge = map_edges.get(edge_id);
 
-	var html  = `<h2>From (${nodes.get(edge.from).label}) To (${nodes.get(edge.to).label})</h2>
-    last action : ${edge.last_action}`;
+	var html  = `<h2>From (${map_nodes.get(edge.from).label}) To (${map_nodes.get(edge.to).label})</h2>
+    <p>action : ${actionToUL(edge.actions, "incoming actions")} </p>
+    <p>errors : ${errorToUL(edge.error_info, "received errors")} </p>`;
 	return html;
+
+    function actionToUL(arr , title) {
+        var html = `<ul>${title}`
+
+        html = html + arr.map( function(e) { return "<li>"+e.selector+"</li>"}).join('');
+        html = html + "</ul>";
+        return html;
+    }
+
+    function errorToUL(arr , title) {
+        var html = `<ul>${title}`
+
+        html = html + arr.map( function(e) { return "<li>"+e+"</li>"}).join('');
+        html = html + "</ul>";
+        return html;
+    }
 }

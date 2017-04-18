@@ -17,12 +17,12 @@ console.log(options);
 var SiteMap = require('./sitemap.js').SiteMap;
 var crawlMap = require('./crawler.js').crawlMap;
 
-var map = new SiteMap(url);
+var map = new SiteMap(url, options);
 
 
 
 
-crawlMap(map, options, function(err, succ) {
+crawlMap(map, function(err, succ) {
     var fs = require('fs');
     fs.writeFile('./test/server/computed_map.js', map.generateVisScript());
 });
