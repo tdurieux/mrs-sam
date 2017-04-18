@@ -97,19 +97,21 @@ class SiteMap {
         const NON_LOCALE_NODE_COLOR = "green";
         const LINK_ERROR_COLOR = "red";
 
-        var script = `var map_url = "${this.url}";\n\n`;
+        var script = `var map_url = "${this.url}";\n\n
+            var map_options = ${JSON.stringify(this.options)};\n\n
+            var map_date = "${this.date}";\n\n
+            var left_scenario = ${this.scenarioManager.numberOfScenarioToExecute()};\n\n
+            var executed_scenario = ${this.scenarioManager.numberOfExecutedScenario()};\n\n
 
-        script = script + `var map_options = ${JSON.stringify(this.options)};\n\n`;
+            var map_nodes = new vis.DataSet([\n`;
 
-        script = script + `var map_date = "${this.date}";\n\n`;
 
-        script = script + "var map_nodes = new vis.DataSet([\n";
 
         var first_node = true;
         this.nodes.forEach((node) => {
             var color = LOCALE_NODE_COLOR;
 
-            if (!node.is_locale) color = LOCALE_NODE_COLOR;
+            if (!node.is_locale) color = NON_LOCALE_NODE_COLOR;
             if (node.is_root) color = ROOT_NODE_COLOR;
 
             //node.node_id = node_id++;

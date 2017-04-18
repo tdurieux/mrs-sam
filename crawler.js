@@ -11,6 +11,7 @@ var sce = require('./scenario.js');
 var GotoAction = sce.GotoAction;
 var WaitAction = sce.WaitAction;
 var ClickAction = sce.ClickAction;
+var ScrollToAction = sce.ScrollToAction;
 var Scenario = sce.Scenario;
 var ScenarioManager = sce.ScenarioManager;
 
@@ -218,9 +219,15 @@ function markError(map, link) {
 }
 
 function addNewScenari(map, evaluate_res, current_scenario, current_node) {
-    var scenarioManager = map.scenarioManager;
+    addNewClickScenari(map, evaluate_res, current_scenario, current_node);
+    addScrollToScenari(map, evaluate_res, current_scenario, current_node);
+    addMouseHoverScenari(map, evaluate_res, current_scenario, current_node);
+    addWaitScenari(map, evaluate_res, current_scenario, current_node);
+}
 
+function addNewClickScenari(map, evaluate_res, current_scenario, current_node) {
     winston.info(`${evaluate_res.selectors.length} selectors have been extracted and transformed into new scenario`);
+    var scenarioManager = map.scenarioManager;
     for (var i = 0; i < evaluate_res.selectors.length; i++) {
         var new_scenario = new Scenario(current_node);
         for (var j = 0; j < current_scenario.actions.length; j++) {
@@ -232,5 +239,31 @@ function addNewScenari(map, evaluate_res, current_scenario, current_node) {
         scenarioManager.addScenarioToExecute(new_scenario);
     }
 }
+
+function addScrollToScenari(map, evaluate_res, current_scenario, current_node) {
+    var scenarioManager = map.scenarioManager;
+    var new_scenario = new Scenario(current_node);
+    for (var j = 0; j < current_scenario.actions.length; j++) {
+        new_scenario.addAction(current_scenario.actions[j]);
+    }
+    var last_action = new ScrollToAction(map.options.scroll_x, map.options.scroll_y);
+    new_scenario.addAction(last_action);
+    new_scenario.addAction(new WaitAction(map.options.wait));
+    scenarioManager.addScenarioToExecute(new_scenario);
+}
+
+function addMouseHoverScenari(map, evaluate_res, current_scenario, current_node) {}
+
+function addWaitScenari(map, evaluate_res, current_scenario, current_node) {
+    var scenarioManager = map.scenarioManager;
+    var new_scenario = new Scenario(current_node);
+    for (var j = 0; j < current_scenario.actions.length; j++) {
+        new_scenario.addAction(current_scenario.actions[j]);
+    }
+    var last_action = new WaitAction(map.options.long_wait);
+    new_scenario.addAction(last_action);
+    scenarioManager.addScenarioToExecute(new_scenario);
+}
+
 
 module.exports.crawlMap = crawlMap;

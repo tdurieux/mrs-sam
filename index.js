@@ -6,6 +6,9 @@ var options = {
 	time: argv.time || 3,
 	wait: argv.wait || 1000,
 	show:argv.show || false,
+	scroll_x: 2000,
+	scroll_y: 4000,
+	long_wait: 4000
 };
 
 var url = argv.url || 'http://localhost:8080';

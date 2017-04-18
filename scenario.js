@@ -1,122 +1,148 @@
 class Action {
-  constructor() {
-    this.type = this.constructor.name;
-  }
-  toString() {
-    return `${this.constructor.name}`;
-  }
+    constructor() {
+        this.type = this.constructor.name;
+    }
+    toString() {
+        return `${this.constructor.name}`;
+    }
 }
 
 class GotoAction extends Action {
-  constructor(url) {
-    super();
-    this.url = url;
-  }
+    constructor(url) {
+        super();
+        this.url = url;
+    }
 
-  attachTo(promise) {
-    return promise.goto(this.url);
-  }
+    attachTo(promise) {
+        return promise.goto(this.url);
+    }
 
-  toString() {
-    return `${super.toString()}: ${this.url}`;
-  }
+    toString() {
+        return `${super.toString()}: ${this.url}`;
+    }
 }
 
 
 class SelectorAction extends Action {
-  constructor(selector) {
-    super();
-    this.selector = selector;
-  }
+    constructor(selector) {
+        super();
+        this.selector = selector;
+    }
 
-  toString() {
-    return `${super.toString()}: ${this.selector}`;
-  }
+    toString() {
+        return `${super.toString()}: ${this.selector}`;
+    }
 }
 
 class ClickAction extends SelectorAction {
-  attachTo(promise) {
-    return promise.click(this.selector);
-  }
+    attachTo(promise) {
+        return promise.click(this.selector);
+    }
 }
 
 
 class MouseOverAction extends SelectorAction {
-  attachTo(promise) {
-    return promise.mouseover(this.selector);
-  }
+    attachTo(promise) {
+        return promise.mouseover(this.selector);
+    }
+}
+
+class ScrollToAction extends Action {
+    constructor(x, y) {
+        super();
+        this.x = x;
+        this.y = y;
+    }
+
+    attachTo(promise) {
+        return promise.scrollTo(this.x,this.y);
+    }
+
+    toString() {
+        return `${super.toString()}: ${this.x}, ${this.y}`;
+    }
 }
 
 
 class WaitAction extends Action {
-  constructor(ms) {
-    super();
-    this.ms = ms;
-  }
+    constructor(ms) {
+        super();
+        this.ms = ms;
+    }
 
-  attachTo(promise) {
-    return promise.wait(this.ms);
-  }
+    attachTo(promise) {
+        return promise.wait(this.ms);
+    }
 
-  toString() {
-    return `${super.toString()}: ${this.ms}ms`;
-  }
+    toString() {
+        return `${super.toString()}: ${this.ms}ms`;
+    }
 }
 
 
 class Scenario {
-  constructor(from) {
-    this.actions = [];
-    this.from = from;
-  }
-
-  toString() {
-    return `[${this.actions.join(', ')}]`;
-  }
-
-  addAction(action) {
-    this.actions.push(action);
-  }
-
-  attachTo(promise) {
-    var returnedPromise = promise;
-    this.actions.map(a => { returnedPromise = a.attachTo(returnedPromise); });
-    return returnedPromise;
-  }
-
-  get size() {
-    return this.actions.length;
-  }
-
-  getLastAction() {
-    if ((this.actions.length) - 2 >= 0) {
-      return this.actions[this.actions.length - 2];
-    } else {
-      return undefined;
+    constructor(from) {
+        this.actions = [];
+        this.from = from;
     }
 
-  }
+    toString() {
+        return `[${this.actions.join(', ')}]`;
+    }
+
+    addAction(action) {
+        this.actions.push(action);
+    }
+
+    attachTo(promise) {
+        var returnedPromise = promise;
+        this.actions.map(a => { returnedPromise = a.attachTo(returnedPromise); });
+        return returnedPromise;
+    }
+
+    get size() {
+        return this.actions.length;
+    }
+
+    getLastAction() {
+        if ((this.actions.length) - 2 >= 0) {
+            return this.actions[this.actions.length - 2];
+        } else {
+            return undefined;
+        }
+
+    }
 }
 
 class ScenarioManager {
-  constructor() {
-    this.executed = [];
-    this.toexecute = [];
-  }
+    constructor() {
+        this.executed = [];
+        this.toexecute = [];
+        this.executed_scenario = 0;
+    }
 
-  addScenarioToExecute(scenario) {
-    this.toexecute.push(scenario);
-  }
+    addScenarioToExecute(scenario) {
+        this.toexecute.push(scenario);
+    }
 
-  nextScenarioToExecute() {
-    var scenario = this.toexecute.shift();
-    this.executed.push(scenario);
-    return scenario;
-  }
+    nextScenarioToExecute() {
+        var scenario = this.toexecute.shift();
+        this.executed.push(scenario);
+        this.executed_scenario++;
+        return scenario;
+    }
 
-  hasScenarioToExecute() {
-    return this.toexecute.length > 0;
-  }
+    hasScenarioToExecute() {
+        return this.toexecute.length > 0;
+    }
+
+    numberOfScenarioToExecute() {
+      return this.toexecute.length;
+    }
+
+    numberOfExecutedScenario() {
+      return this.executed_scenario;
+    }
 }
 
 module.exports.ScenarioManager = ScenarioManager;
@@ -125,3 +151,4 @@ module.exports.GotoAction = GotoAction;
 module.exports.ClickAction = ClickAction;
 module.exports.MouseOverAction = MouseOverAction;
 module.exports.WaitAction = WaitAction;
+module.exports.ScrollToAction = ScrollToAction;

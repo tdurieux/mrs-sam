@@ -3,6 +3,8 @@ document.getElementById('maxsteps_option').innerHTML = map_options.maxsteps;
 document.getElementById('time_option').innerHTML = map_options.time;
 document.getElementById('wait_option').innerHTML = map_options.wait;
 document.getElementById('date').innerHTML = map_date;
+document.getElementById('executed_scenario').innerHTML = executed_scenario;
+document.getElementById('left_scenario').innerHTML = left_scenario;
 var container = document.getElementById('mynetwork');
 
 
