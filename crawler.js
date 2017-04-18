@@ -212,7 +212,7 @@ function updateMap(map, scenario, analysis_result) {
 
 function markError(map, link) {
     map.response_error.forEach((err) => link.errors.push(err));
-    map.html_error.forEach((err) => link.arrors.push(err));
+    map.html_error.forEach((err) => link.errors.push(err));
     map.response_error = [];
     map.html_error = [];
     winston.info("Link marked with error");
