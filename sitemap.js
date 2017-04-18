@@ -99,7 +99,9 @@ class SiteMap {
 
         var script = `var map_url = "${this.url}";\n\n`;
 
-        var script = `var map_options = ${JSON.stringify(this.options)};\n\n`;
+        script = script + `var map_options = ${JSON.stringify(this.options)};\n\n`;
+
+        script = script + `var map_date = "${this.date}";\n\n`;
 
         script = script + "var map_nodes = new vis.DataSet([\n";
 

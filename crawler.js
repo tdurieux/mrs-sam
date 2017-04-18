@@ -62,7 +62,6 @@ function createInitialScenario(map) {
     initScenario.addAction(new WaitAction(map.options.wait));
     winston.info(`An initial scenario has been created and registered to the ScenarioManager.`);
     return initScenario;
-
 }
 
 
@@ -72,52 +71,7 @@ function crawl(map, callback) {
     var hasTime = (present() - startTime) < (map.options.time * 60 * 1000);
 
     if (scenarioManager.hasScenarioToExecute() && hasTime) {
-        var scenario = scenarioManager.nextScenarioToExecute();
-        winston.info(`Proceed: ${scenario}\n`);
-        const WAIT_ACTIONS_POWER_FACTOR = 2;
-        if (scenario.size <= (map.options.maxsteps * WAIT_ACTIONS_POWER_FACTOR)) {
-            scenario.attachTo(nightmare)
-                .evaluate(htmlAnalysis)
-                .then(function(analysis_result) {
-                    winston.info(`A scenario has been executed and after the HTML has been analyzed`);
-                    if (!map.existNodeWithHash(analysis_result.hash)) {
-                        winston.info("A new node was created representing the web page after that scenario");
-
-                        if (map.url.includes(analysis_result.hostname)) {
-                            var to = map.createNode(analysis_result.hash);
-                            //nightmare.screenshot(`./test/server/img/node${to.id}.png`).then();
-                            var new_link = map.createLink(scenario.from, to);
-                            new_link.actions.push(scenario.getLastAction());
-                            to.is_locale = true;
-                            markError(map, new_link);
-                            addNewScenari(map, analysis_result, scenario, to);
-                        } else {
-                            var to = map.createNode(analysis_result.hostname);
-                            //nightmare.screenshot(`./test/server/img/node${to.id}.png`).then();
-                            var new_link = map.createLink(scenario.from, to);
-                            new_link.actions.push(scenario.getLastAction());
-                            markError(map,new_link);
-                            to.inside = false;
-                            winston.info(`The end of the scenario is in another host. The crawler won't go further.`);
-                        }
-                    } else {
-                        winston.info("An existing node corresponds to the end of that scenario");
-                        var to = map.getNodeWithHash(analysis_result.hash);
-                        if (to) {
-                            var link = map.createLink(scenario.from, to);
-                            link.actions.push(scenario.getLastAction());
-                            markError(map, link);
-                        }
-                    }
-                    crawl(map, callback);
-                })
-                .catch(function(err) {
-                    winston.error(err);
-                    crawl(map, callback);
-                });
-        } else {
-            crawl(map, callback);
-        }
+        executeNextScenario(map, callback);
     } else {
         nightmare.end()
             .then(res => {
@@ -133,6 +87,61 @@ function crawl(map, callback) {
     }
 }
 
+
+function executeNextScenario(map, callback) {
+    const WAIT_ACTIONS_POWER_FACTOR = 2;
+    
+    var nightmare = map.nightmare;
+    var scenarioManager = map.scenarioManager;
+    var scenario = scenarioManager.nextScenarioToExecute();
+
+    winston.info(`Proceed: ${scenario}\n`);
+    
+    if (scenario.size <= (map.options.maxsteps * WAIT_ACTIONS_POWER_FACTOR)) {
+        scenario.attachTo(nightmare)
+            .evaluate(htmlAnalysis)
+            .then(function(analysis_result) {
+                winston.info(`A scenario has been executed and after the HTML has been analyzed`);
+                if (!map.existNodeWithHash(analysis_result.hash)) {
+                    winston.info("A new node was created representing the web page after that scenario");
+
+                    if (map.url.includes(analysis_result.hostname)) {
+                        var to = map.createNode(analysis_result.hash);
+                        //nightmare.screenshot(`./test/server/img/node${to.id}.png`).then();
+                        var new_link = map.createLink(scenario.from, to);
+                        new_link.actions.push(scenario.getLastAction());
+                        to.is_locale = true;
+                        markError(map, new_link);
+                        addNewScenari(map, analysis_result, scenario, to);
+                    } else {
+                        var to = map.createNode(analysis_result.hostname);
+                        //nightmare.screenshot(`./test/server/img/node${to.id}.png`).then();
+                        var new_link = map.createLink(scenario.from, to);
+                        new_link.actions.push(scenario.getLastAction());
+                        markError(map, new_link);
+                        to.inside = false;
+                        winston.info(`The end of the scenario is in another host. The crawler won't go further.`);
+                    }
+                } else {
+                    winston.info("An existing node corresponds to the end of that scenario");
+                    var to = map.getNodeWithHash(analysis_result.hash);
+                    if (to) {
+                        var link = map.createLink(scenario.from, to);
+                        link.actions.push(scenario.getLastAction());
+                        markError(map, link);
+                    }
+                }
+                crawl(map, callback);
+            })
+            .catch(function(err) {
+                winston.error(err);
+                crawl(map, callback);
+            });
+    } else {
+        crawl(map, callback);
+    }
+
+}
 
 
 

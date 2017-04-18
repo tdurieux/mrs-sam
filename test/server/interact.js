@@ -1,5 +1,9 @@
 
-document.getElementById('site_url').innerHTML = site_url;
+document.getElementById('site_url').innerHTML = map_url;
+document.getElementById('maxsteps_option').innerHTML = map_options.maxsteps;
+document.getElementById('time_option').innerHTML = map_options.time;
+document.getElementById('wait_option').innerHTML = map_options.wait;
+document.getElementById('date').innerHTML = map_date;
 var container = document.getElementById('mynetwork');
 
 
@@ -41,20 +45,20 @@ function showEdge(edge_id) {
 	var edge = map_edges.get(edge_id);
 
 	var html  = `<h2>From (${map_nodes.get(edge.from).label}) To (${map_nodes.get(edge.to).label})</h2>
-    <p>action : ${actionToUL(edge.actions, "incoming actions")} </p>
-    <p>errors : ${errorToUL(edge.error_info, "received errors")} </p>`;
+    ${actionToUL(edge.actions)}
+    ${errorToUL(edge.error_info)}`;
 	return html;
 
-    function actionToUL(arr , title) {
-        var html = `<ul>${title}`
+    function actionToUL(arr ) {
+        var html = `Actions: <ul>`
 
         html = html + arr.map( function(e) { return "<li>"+e.selector+"</li>"}).join('');
         html = html + "</ul>";
         return html;
     }
 
-    function errorToUL(arr , title) {
-        var html = `<ul>${title}`
+    function errorToUL(arr) {
+        var html = `Errors: <ul>`
 
         html = html + arr.map( function(e) { return "<li>"+e+"</li>"}).join('');
         html = html + "</ul>";
