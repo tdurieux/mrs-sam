@@ -90,47 +90,19 @@ function crawl(map, callback) {
 
 function executeNextScenario(map, callback) {
     const WAIT_ACTIONS_POWER_FACTOR = 2;
-    
+
     var nightmare = map.nightmare;
     var scenarioManager = map.scenarioManager;
     var scenario = scenarioManager.nextScenarioToExecute();
 
     winston.info(`Proceed: ${scenario}\n`);
-    
+
     if (scenario.size <= (map.options.maxsteps * WAIT_ACTIONS_POWER_FACTOR)) {
         scenario.attachTo(nightmare)
             .evaluate(htmlAnalysis)
             .then(function(analysis_result) {
                 winston.info(`A scenario has been executed and after the HTML has been analyzed`);
-                if (!map.existNodeWithHash(analysis_result.hash)) {
-                    winston.info("A new node was created representing the web page after that scenario");
-
-                    if (map.url.includes(analysis_result.hostname)) {
-                        var to = map.createNode(analysis_result.hash);
-                        //nightmare.screenshot(`./test/server/img/node${to.id}.png`).then();
-                        var new_link = map.createLink(scenario.from, to);
-                        new_link.actions.push(scenario.getLastAction());
-                        to.is_locale = true;
-                        markError(map, new_link);
-                        addNewScenari(map, analysis_result, scenario, to);
-                    } else {
-                        var to = map.createNode(analysis_result.hostname);
-                        //nightmare.screenshot(`./test/server/img/node${to.id}.png`).then();
-                        var new_link = map.createLink(scenario.from, to);
-                        new_link.actions.push(scenario.getLastAction());
-                        markError(map, new_link);
-                        to.inside = false;
-                        winston.info(`The end of the scenario is in another host. The crawler won't go further.`);
-                    }
-                } else {
-                    winston.info("An existing node corresponds to the end of that scenario");
-                    var to = map.getNodeWithHash(analysis_result.hash);
-                    if (to) {
-                        var link = map.createLink(scenario.from, to);
-                        link.actions.push(scenario.getLastAction());
-                        markError(map, link);
-                    }
-                }
+                handleEndOfScenario(map, scenario, analysis_result);
                 crawl(map, callback);
             })
             .catch(function(err) {
@@ -175,7 +147,6 @@ function htmlAnalysis() {
 
     }
 
-
     function computeSelector(el) {
         var names = [];
         while (el.parentNode) {
@@ -199,6 +170,44 @@ function htmlAnalysis() {
         return a_link.href.includes('mailto');
     }
 }
+
+function handleEndOfScenario(map, scenario, analysis_result) {
+    var end_node_already_exists = map.existNodeWithHash(analysis_result.hash);
+    var is_locale = map.url.includes(analysis_result.hostname);
+    var end_node = updateMap(map, scenario, analysis_result);
+
+    if (!end_node_already_exists && is_locale) {
+        addNewScenari(map, analysis_result, scenario, end_node);
+        winston.info(`The end of the scenario is new. The crawler has created new scenario.`);
+    }
+}
+
+function updateMap(map, scenario, analysis_result) {
+    var from_node = scenario.from;
+    var end_node_already_exists = map.existNodeWithHash(analysis_result.hash);
+    var end_node = map.getNodeWithHash(analysis_result.hash);
+
+    if (end_node === undefined) {
+        var end_node_hash = analysis_result.hash;
+        var is_locale = map.url.includes(analysis_result.hostname);
+        if (!is_locale) {
+            end_node_hash = analysis_result.hostname
+        }
+        end_node = map.createNode(end_node_hash);
+        end_node.is_locale = is_locale;
+    }
+
+    var link = map.getLink(from_node, end_node);
+    if (link === undefined) {
+        link = map.createLink(from_node, end_node);
+    }
+
+    link.actions.push(scenario.getLastAction());
+    markError(map, link);
+
+    return end_node;
+}
+
 
 function markError(map, link) {
     map.response_error.forEach((err) => link.errors.push(err));

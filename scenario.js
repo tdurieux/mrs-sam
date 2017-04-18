@@ -1,4 +1,7 @@
 class Action {
+  constructor() {
+    this.type = this.constructor.name;
+  }
   toString() {
     return `${this.constructor.name}`;
   }
@@ -38,7 +41,7 @@ class ClickAction extends SelectorAction {
 }
 
 
-class MouseOverAction extends Action {
+class MouseOverAction extends SelectorAction {
   attachTo(promise) {
     return promise.mouseover(this.selector);
   }

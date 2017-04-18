@@ -134,7 +134,7 @@ class SiteMap {
             script = script + `\t{from: ${link.from.id},
                 to: ${link.to.id}, 
                 error_info : ${JSON.stringify(link.errors)},
-                actions: ${JSON.stringify(link.actions)},
+                actions: ${JSON.stringify(link.actions.map(a => a.toString()))},
                 ${color}
               }`
         });
