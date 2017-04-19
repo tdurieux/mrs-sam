@@ -13,6 +13,7 @@ var WaitAction = sce.WaitAction;
 var ClickAction = sce.ClickAction;
 var ScrollToAction = sce.ScrollToAction;
 var MouseOverAction = sce.MouseOverAction;
+var BackAction = sce.BackAction;
 var Scenario = sce.Scenario;
 var ScenarioManager = sce.ScenarioManager;
 
@@ -222,6 +223,7 @@ function addNewScenari(map, evaluate_res, current_scenario, current_node) {
     if (map.options.scenario.scroll.active) addScrollToScenari(map, evaluate_res, current_scenario, current_node);
     if (map.options.scenario.mouseover.active) addMouseOverScenari(map, evaluate_res, current_scenario, current_node);
     if (map.options.scenario.wait.active) addWaitScenari(map, evaluate_res, current_scenario, current_node);
+    if (map.options.scenario.back.active) addBackScenari(map, evaluate_res, current_scenario, current_node);
 }
 
 function addNewClickScenari(map, evaluate_res, current_scenario, current_node) {
@@ -273,6 +275,19 @@ function addWaitScenari(map, evaluate_res, current_scenario, current_node) {
     }
     var last_action = new WaitAction(map.options.scenario.wait.wait);
     new_scenario.addAction(last_action);
+    new_scenario.addAction(new WaitAction(map.options.engine.wait));
+    scenarioManager.addScenarioToExecute(new_scenario);
+}
+
+function addBackScenari(map, evaluate_res, current_scenario, current_node) {
+    var scenarioManager = map.scenarioManager;
+    var new_scenario = new Scenario(current_node);
+    for (var j = 0; j < current_scenario.actions.length; j++) {
+        new_scenario.addAction(current_scenario.actions[j]);
+    }
+    var last_action = new BackAction();
+    new_scenario.addAction(last_action);
+    new_scenario.addAction(new WaitAction(map.options.engine.wait));
     scenarioManager.addScenarioToExecute(new_scenario);
 }
 

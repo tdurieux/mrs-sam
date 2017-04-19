@@ -79,6 +79,14 @@ class WaitAction extends Action {
     }
 }
 
+class BackAction extends Action {
+
+    attachTo(promise) {
+        return promise.back();
+    }
+}
+
+
 
 class Scenario {
     constructor(from) {
@@ -154,3 +162,4 @@ module.exports.ClickAction = ClickAction;
 module.exports.MouseOverAction = MouseOverAction;
 module.exports.WaitAction = WaitAction;
 module.exports.ScrollToAction = ScrollToAction;
+module.exports.BackAction = BackAction;

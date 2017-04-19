@@ -10,11 +10,11 @@ var options = {
     },
     scenario: {
         click: {
-            active: false,
+            active: true,
             selectors: ['a', 'div']
         },
         scroll: {
-            active: false,
+            active: true,
             scroll_x: 2000,
             scroll_y: 4000
         },
@@ -23,8 +23,11 @@ var options = {
             wait: 4000
         },
         mouseover: {
-            active: false,
+            active: true,
             selectors: ['a', 'div']
+        },
+        back: {
+        	active: true
         }
     }
 };
