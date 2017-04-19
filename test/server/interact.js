@@ -43,19 +43,38 @@ function showEdge(edge_id) {
     var edge = map_edges.get(edge_id);
 
     var html = `<h2>From (${map_nodes.get(edge.from).label}) To (${map_nodes.get(edge.to).label})</h2>
-    Actions: ${toUL(edge.actions)}`
+    Actions: ${toUL(edge.actions)}\n`
 
     if (edge.error_info.length > 0) {
-        html = html + `Errors: ${toUL(edge.error_info)}`;
+        html = html + `Errors: ${toUL(edge.error_info)}\n`;
+    }
+
+    if (edge.diff.length > 0 ) {
+        html = html + `Diff: ${showDiff(edge.diff)}\n`;
     }
     return html;
 
     function toUL(arr) {
-        var html = `<ul>`
+        var html = `<ul>\n`
 
         html = html + arr.map(function(e) {
-            return "<li>" + e + "</li>" }).join('');
-        html = html + "</ul>";
+            return `<li> ${e} </li>\n`; 
+        }).join('');
+        html = html + "</ul>\n";
+        return html;
+    }
+
+    function showDiff(diff) {
+        var html = `<ul>\n`
+
+        html = html + diff.map(function(d) {
+            if (d.removed || d.added) {
+                return `<li> ${d.removed ? "Removed" : "" } ${d.added ? "Added" : ""} : <xmp>${d.value}</xmp> </li>\n`;
+            } else {
+                return "";
+            }
+        }).join('');
+        html = html + "</ul>\n";
         return html;
     }
 }

@@ -45,6 +45,22 @@ var map = new SiteMap(url, options);
 
 
 crawlMap(map, function(err, succ) {
+
+	console.log('crawling is done');
+
+	computeDiff(map);
+
+	console.log('diff is done');
+
     var fs = require('fs');
     fs.writeFile('./test/server/computed_map.js', map.generateVisScript());
 });
+
+
+function computeDiff(map) {
+	var jsdiff = require('diff');
+
+	map.links.forEach(l => {
+		l.diff = jsdiff.diffLines(l.from.hash, l.to.hash);
+	})
+}

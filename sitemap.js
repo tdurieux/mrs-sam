@@ -137,6 +137,7 @@ class SiteMap {
                 to: ${link.to.id}, 
                 error_info : ${JSON.stringify(link.errors)},
                 actions: ${JSON.stringify(link.actions.map(a => a.toString()))},
+                diff: ${JSON.stringify(link.diff)},
                 ${color}
               }`
         });

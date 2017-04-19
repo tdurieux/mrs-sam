@@ -22,6 +22,7 @@
   },
   "homepage": "https://github.com/xblanc33/mrs-sam#readme",
   "dependencies": {
+    "diff": "^3.2.0",
     "nightmare": "^2.10.0",
     "present": "^1.0.0",
     "winston": "^2.3.0",
