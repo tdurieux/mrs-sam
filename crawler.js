@@ -29,6 +29,7 @@ function crawlMap(map, callback) {
     map.scenarioManager = new ScenarioManager();
     var initial_scenario = createInitialScenario(map)
     map.scenarioManager.addScenarioToExecute(initial_scenario);
+    map.scenarioManager.current_node = map.root_node;
 
     winston.info(`Start crawling of ${map.url} with ${map.options.engine.maxsteps} maximun steps in ${map.options.engine.time} min`);
     crawl(map, callback);
@@ -63,6 +64,7 @@ function createInitialScenario(map) {
     var initScenario = new Scenario(map.root_node);
     initScenario.addAction(new GotoAction(map.url));
     initScenario.addAction(new WaitAction(map.options.engine.wait));
+    initScenario.root_node = map.root_node;
     winston.info(`An initial scenario has been created and registered to the ScenarioManager.`);
     return initScenario;
 }
@@ -74,7 +76,9 @@ function crawl(map, callback) {
     var hasTime = (present() - startTime) < (map.options.engine.time * 60 * 1000);
 
     if (scenarioManager.hasScenarioToExecute() && hasTime) {
-        executeNextScenario(map, callback);
+        executeNextScenario(map, () => {            
+            crawl(map,callback);
+        });
     } else {
         nightmare.end()
             .then(res => {
@@ -100,22 +104,36 @@ function executeNextScenario(map, callback) {
 
     if (scenario.size <= (map.options.engine.maxsteps * WAIT_ACTIONS_POWER_FACTOR)) {
         winston.info(`Proceed: ${scenario}\n`);
-        scenario.attachTo(nightmare)
-            .evaluate(htmlAnalysis)
-            .then(function(analysis_result) {
-                winston.info(`A scenario has been executed and after the HTML has been analyzed`);
-                handleEndOfScenario(map, scenario, analysis_result);
-                crawl(map, callback);
-            })
-            .catch(function(err) {
-                winston.error(err);
-                crawl(map, callback);
-            });
+        executeScenario(map, scenario, callback);
     } else {
-        crawl(map, callback);
+        callback();
     }
 
 }
+
+
+function executeScenario(map, scenario, callback) {
+    var nightmare = map.nightmare;
+    if (scenario.hasNext()) {
+        var next_action = scenario.next();
+        next_action.from = scenario.root_node;
+        next_action.attachTo(nightmare)
+            .evaluate(htmlAnalysis)
+            .then(function(analysis_result) {
+                winston.info(`An action has been executed and after the HTML has been analyzed`);
+                scenario.root_node = handleEndOfAction(map, next_action, analysis_result);
+                map.scenarioManager.current_node = scenario.root_node;
+                executeScenario(map, scenario, callback)
+            })
+            .catch((err) => {
+                winston.error(`An action cannot be executed ${err}, scenario is aborded.`);
+                callback()
+            })
+    } else {
+        callback();
+    }
+}
+
 
 
 
@@ -173,19 +191,20 @@ function htmlAnalysis() {
     }
 }
 
-function handleEndOfScenario(map, scenario, analysis_result) {
+function handleEndOfAction(map, action, analysis_result) {
     var end_node_already_exists = map.existNodeWithHash(analysis_result.hash);
-    var is_locale = map.url.includes(analysis_result.hostname);
-    var end_node = updateMap(map, scenario, analysis_result);
+    var end_node = updateMap(map, action, analysis_result);
 
-    if (!end_node_already_exists && is_locale) {
-        addNewScenari(map, analysis_result, scenario, end_node);
-        winston.info(`The end of the scenario is new. The crawler has created new scenario.`);
+    if (!end_node_already_exists) {
+        addNewScenari(map, analysis_result, end_node);
+        winston.info(`The action produces a new node. The crawler has created new scenario.`);
     }
+
+    return end_node;
 }
 
-function updateMap(map, scenario, analysis_result) {
-    var from_node = scenario.from;
+function updateMap(map, action, analysis_result) {
+    var from_node = action.from;
     var end_node_already_exists = map.existNodeWithHash(analysis_result.hash);
     var end_node = map.getNodeWithHash(analysis_result.hash);
 
@@ -204,8 +223,10 @@ function updateMap(map, scenario, analysis_result) {
         link = map.createLink(from_node, end_node);
     }
 
-    link.actions.push(scenario.getLastAction());
+    link.actions.push(action);
     markError(map, link);
+
+    map.current_node = end_node;
 
     return end_node;
 }
@@ -218,76 +239,67 @@ function markError(map, link) {
     map.html_error = [];
 }
 
-function addNewScenari(map, evaluate_res, current_scenario, current_node) {
-    if (map.options.scenario.click.active) addNewClickScenari(map, evaluate_res, current_scenario, current_node);
-    if (map.options.scenario.scroll.active) addScrollToScenari(map, evaluate_res, current_scenario, current_node);
-    if (map.options.scenario.mouseover.active) addMouseOverScenari(map, evaluate_res, current_scenario, current_node);
-    if (map.options.scenario.wait.active) addWaitScenari(map, evaluate_res, current_scenario, current_node);
-    if (map.options.scenario.back.active) addBackScenari(map, evaluate_res, current_scenario, current_node);
+function addNewScenari(map, evaluate_res, current_node) {
+    var is_locale = map.url.includes(evaluate_res.hostname);
+    if (map.options.scenario.click.active && is_locale) addNewClickScenari(map, evaluate_res, current_node);
+    if (map.options.scenario.scroll.active && is_locale) addScrollToScenari(map, evaluate_res, current_node);
+    if (map.options.scenario.mouseover.active && is_locale) addMouseOverScenari(map, evaluate_res, current_node);
+    if (map.options.scenario.wait.active && is_locale) addWaitScenari(map, evaluate_res, current_node);
+    if (map.options.scenario.back.active || ! is_locale) addBackScenari(map, evaluate_res, current_node);
 }
 
-function addNewClickScenari(map, evaluate_res, current_scenario, current_node) {
+function addNewClickScenari(map, evaluate_res, current_node) {
     winston.info(`${evaluate_res.selectors.length} selectors have been extracted and transformed into new scenario`);
     var scenarioManager = map.scenarioManager;
     for (var i = 0; i < evaluate_res.selectors.length; i++) {
         var new_scenario = new Scenario(current_node);
-        for (var j = 0; j < current_scenario.actions.length; j++) {
-            new_scenario.addAction(current_scenario.actions[j]);
-        }
-        var last_action = new ClickAction(evaluate_res.selectors[i]);
-        new_scenario.addAction(last_action);
+        var action = new ClickAction(evaluate_res.selectors[i]);
+        new_scenario.addAction(action);
         new_scenario.addAction(new WaitAction(map.options.engine.wait));
+        new_scenario.root_node = current_node;
         scenarioManager.addScenarioToExecute(new_scenario);
     }
 }
 
-function addScrollToScenari(map, evaluate_res, current_scenario, current_node) {
+function addScrollToScenari(map, evaluate_res, current_node) {
     var scenarioManager = map.scenarioManager;
     var new_scenario = new Scenario(current_node);
-    for (var j = 0; j < current_scenario.actions.length; j++) {
-        new_scenario.addAction(current_scenario.actions[j]);
-    }
-    var last_action = new ScrollToAction(map.options.scenario.scroll.scroll_x, map.options.scenario.scroll.scroll_y);
-    new_scenario.addAction(last_action);
+    var action = new ScrollToAction(map.options.scenario.scroll.scroll_x, map.options.scenario.scroll.scroll_y);
+    new_scenario.addAction(action);
     new_scenario.addAction(new WaitAction(map.options.engine.wait));
+    new_scenario.root_node = current_node;
     scenarioManager.addScenarioToExecute(new_scenario);
 }
 
-function addMouseOverScenari(map, evaluate_res, current_scenario, current_node) {
+function addMouseOverScenari(map, evaluate_res, current_node) {
     var scenarioManager = map.scenarioManager;
     for (var i = 0; i < evaluate_res.selectors.length; i++) {
         var new_scenario = new Scenario(current_node);
-        for (var j = 0; j < current_scenario.actions.length; j++) {
-            new_scenario.addAction(current_scenario.actions[j]);
-        }
-        var last_action = new MouseOverAction(evaluate_res.selectors[i]);
-        new_scenario.addAction(last_action);
+        var action = new MouseOverAction(evaluate_res.selectors[i]);
+        new_scenario.addAction(action);
         new_scenario.addAction(new WaitAction(map.options.engine.wait));
+        new_scenario.root_node = current_node;
         scenarioManager.addScenarioToExecute(new_scenario);
     }
 }
 
-function addWaitScenari(map, evaluate_res, current_scenario, current_node) {
+function addWaitScenari(map, evaluate_res, current_node) {
     var scenarioManager = map.scenarioManager;
     var new_scenario = new Scenario(current_node);
-    for (var j = 0; j < current_scenario.actions.length; j++) {
-        new_scenario.addAction(current_scenario.actions[j]);
-    }
-    var last_action = new WaitAction(map.options.scenario.wait.wait);
-    new_scenario.addAction(last_action);
+    var action = new WaitAction(map.options.scenario.wait.wait);
+    new_scenario.addAction(action);
     new_scenario.addAction(new WaitAction(map.options.engine.wait));
+    new_scenario.root_node = current_node;
     scenarioManager.addScenarioToExecute(new_scenario);
 }
 
-function addBackScenari(map, evaluate_res, current_scenario, current_node) {
+function addBackScenari(map, evaluate_res, current_node) {
     var scenarioManager = map.scenarioManager;
     var new_scenario = new Scenario(current_node);
-    for (var j = 0; j < current_scenario.actions.length; j++) {
-        new_scenario.addAction(current_scenario.actions[j]);
-    }
-    var last_action = new BackAction();
-    new_scenario.addAction(last_action);
+    var action = new BackAction();
+    new_scenario.addAction(action);
     new_scenario.addAction(new WaitAction(map.options.engine.wait));
+    new_scenario.root_node = current_node;
     scenarioManager.addScenarioToExecute(new_scenario);
 }
 

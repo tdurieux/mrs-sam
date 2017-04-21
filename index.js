@@ -6,6 +6,7 @@ var options = {
         maxsteps: argv.maxsteps || 5,
         time: argv.time || 3,
         wait: argv.wait || 1000,
+        backmode: argv.wait || true,
         show: argv.show || false
     },
     scenario: {
@@ -19,11 +20,11 @@ var options = {
             scroll_y: 4000
         },
         wait: {
-            active: true,
+            active: false,
             wait: 4000
         },
         mouseover: {
-            active: true,
+            active: false,
             selectors: ['a', 'div']
         },
         back: {
@@ -47,13 +48,15 @@ var map = new SiteMap(url, options);
 crawlMap(map, function(err, succ) {
 
 	console.log('crawling is done');
+	var fs = require('fs');
+	var fileName = map.url.slice(7,map.url.length).replace('.','_').replace(':','_') + "_"+ map.options.engine.time
+	console.log(fileName);
+	fs.writeFileSync(`./test/server/${fileName}_map.js`, map.generateVisScript());
 
 	computeDiff(map);
-
 	console.log('diff is done');
-
-    var fs = require('fs');
-    fs.writeFile('./test/server/computed_map.js', map.generateVisScript());
+    
+    fs.writeFileSync(`./test/server/${fileName}_diff.js`, map.generateVisScript());
 });
 
 
@@ -61,6 +64,8 @@ function computeDiff(map) {
 	var jsdiff = require('diff');
 
 	map.links.forEach(l => {
-		l.diff = jsdiff.diffLines(l.from.hash, l.to.hash);
+		//l.diff = jsdiff.diffLines(l.from.hash, l.to.hash);
+		//console.log('a diff is done');
+		l.diff = jsdiff.diffWordsWithSpace(l.from.hash, l.to.hash);		
 	})
 }

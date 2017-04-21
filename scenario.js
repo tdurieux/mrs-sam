@@ -118,7 +118,14 @@ class Scenario {
         } else {
             return undefined;
         }
+    }
 
+    hasNext() {
+        return this.actions.length !== 0;
+    }
+
+    next() {
+        return this.actions.shift();
     }
 }
 
@@ -134,16 +141,17 @@ class ScenarioManager {
     }
 
     nextScenarioToExecute() {
-        var id = Math.floor(Math.random() * this.toexecute.length);
-        var scenario = this.toexecute[id]; 
-        this.toexecute.splice(id, 1);
+        var candidate = this.toexecute.filter((scenario) => scenario.root_node === this.current_node);
+        var id = Math.floor(Math.random() * candidate.length);
+        var scenario = candidate[id]; 
+        this.toexecute.splice(this.toexecute.indexOf(scenario), 1);
         this.executed.push(scenario);
         this.executed_scenario++;
         return scenario;
     }
 
     hasScenarioToExecute() {
-        return this.toexecute.length > 0;
+        return this.toexecute.filter((scenario) => scenario.root_node === this.current_node).length > 0;
     }
 
     numberOfScenarioToExecute() {
