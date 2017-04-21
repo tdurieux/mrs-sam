@@ -76,8 +76,8 @@ function crawl(map, callback) {
     var hasTime = (present() - startTime) < (map.options.engine.time * 60 * 1000);
 
     if (scenarioManager.hasScenarioToExecute() && hasTime) {
-        executeNextScenario(map, () => {            
-            crawl(map,callback);
+        executeNextScenario(map, () => {
+            crawl(map, callback);
         });
     } else {
         nightmare.end()
@@ -196,8 +196,13 @@ function handleEndOfAction(map, action, analysis_result) {
     var end_node = updateMap(map, action, analysis_result);
 
     if (!end_node_already_exists) {
-        addNewScenari(map, analysis_result, end_node);
-        winston.info(`The action produces a new node. The crawler has created new scenario.`);
+        if (end_node.level <= map.options.engine.maxsteps) {
+            addNewScenari(map, analysis_result, end_node);
+            winston.info(`The action produces a new node. The crawler has created new scenario.`);
+        } else {
+            addBackScenari(map, analysis_result, end_node);
+            winston.info(`Maxstep : created a back scenario.`);
+        }
     }
 
     return end_node;
@@ -215,6 +220,7 @@ function updateMap(map, action, analysis_result) {
             end_node_hash = analysis_result.hostname
         }
         end_node = map.createNode(end_node_hash);
+        end_node.level = from_node.level + 1;
         end_node.is_locale = is_locale;
     }
 
@@ -245,7 +251,7 @@ function addNewScenari(map, evaluate_res, current_node) {
     if (map.options.scenario.scroll.active && is_locale) addScrollToScenari(map, evaluate_res, current_node);
     if (map.options.scenario.mouseover.active && is_locale) addMouseOverScenari(map, evaluate_res, current_node);
     if (map.options.scenario.wait.active && is_locale) addWaitScenari(map, evaluate_res, current_node);
-    if (map.options.scenario.back.active || ! is_locale) addBackScenari(map, evaluate_res, current_node);
+    if (map.options.scenario.back.active || !is_locale) addBackScenari(map, evaluate_res, current_node);
 }
 
 function addNewClickScenari(map, evaluate_res, current_node) {

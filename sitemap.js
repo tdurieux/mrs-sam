@@ -39,6 +39,7 @@ class SiteMap {
         this.root_node.is_root = true;
         this.root_node.is_locale = true;
         this.root_node.is_html = false;
+        this.root_node.level = 0;
         this.nodes.push(this.root_node);
     }
 

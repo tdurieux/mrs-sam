@@ -49,7 +49,7 @@ function showEdge(edge_id) {
         html = html + `Errors: ${toUL(edge.error_info)}\n`;
     }
 
-    if (edge.diff.length > 0 ) {
+    if (edge.diff && edge.diff.length > 0 ) {
         html = html + `Diff: ${showDiff(edge.diff)}\n`;
     }
     return html;
