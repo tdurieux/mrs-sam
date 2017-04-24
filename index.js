@@ -54,7 +54,7 @@ crawlMap(map, function(err, succ) {
     console.log(fileName);
     fs.writeFileSync(`./test/server/${fileName}_map.js`, map.generateVisScript());
 
-    if (options.diff) {
+    if (options.engine.diff) {
         computeDiff(map);
         console.log('diff is done');
 
