@@ -155,6 +155,7 @@ class Scenario {
     }
 }
 
+
 class ScenarioManager {
     constructor() {
         this.executed = [];
