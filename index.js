@@ -23,7 +23,7 @@ crawlMap(map, function(err, succ) {
     var fs = require('fs');
     fs.writeFileSync(`./test/server/${out}_map.js`, map.generateVisScript());
 
-    if (options.diff) {
+    if (options.diff.active) {
         computeDiff(map);
         console.log('diff is done');
 

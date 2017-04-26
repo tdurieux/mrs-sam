@@ -99,7 +99,7 @@ class SiteMap {
         const LINK_ERROR_COLOR = "red";
 
         var script = `var map_url = "${this.url}";\n\n
-            var map_options = ${JSON.stringify(this.options.engine)};\n\n
+            var map_options = ${JSON.stringify(this.options.crawler)};\n\n
             var map_date = "${this.date}";\n\n
             var left_scenario = ${this.scenarioManager.numberOfScenarioToExecute()};\n\n
             var executed_scenario = ${this.scenarioManager.numberOfExecutedScenario()};\n\n

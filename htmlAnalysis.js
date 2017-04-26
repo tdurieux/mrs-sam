@@ -43,17 +43,17 @@ module.exports = function() {
 
     function grabForm() {
         var forms = new Array();
-        var form_tag = document.getElementsByTagName('form');
-        for (var i = 0; i < form_tag.length; i++) {
-            var form = { form_selector: computeSelector(form_tag) };
+        var form_tags = document.getElementsByTagName('form');
+        for (var i = 0; i < form_tags.length; i++) {
+            var form = { form_selector: computeSelector(form_tags[i]) };
             form.inputs = new Array();
-            var inputs = form_tag[i].getElementsByTagName('input')
-            for (var i = 0; i < inputs.length; i++) {
+            var input_tags = form_tags[i].getElementsByTagName('input')
+            for (var j = 0; j < input_tags.length; j++) {
                 form.inputs.push({
-                    selector: computeSelector(inputs[i]),
-                    name: undefined || inputs[i].getAttribute('name'),
-                    value: undefined || inputs[i].getAttribute('value'),
-                    type: undefined || inputs[i].getAttribute('type')
+                    selector: computeSelector(input_tags[j]),
+                    name: undefined || input_tags[j].getAttribute('name'),
+                    value: undefined || input_tags[j].getAttribute('value'),
+                    type: undefined || input_tags[j].getAttribute('type')
                 });
             }
             forms.push(form);

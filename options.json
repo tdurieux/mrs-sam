@@ -7,21 +7,21 @@
         "show": false
     },
     "diff": {
-        "active": true,
+        "active": false,
         "differ":"LINE"
     },
     "scenario": {
         "click": {
-            "active": false,
+            "active": true,
             "selectors": ["a", "div", "img"]
         },
         "scroll": {
-            "active": false,
+            "active": true,
             "scroll_x": 2000,
             "scroll_y": 4000
         },
         "wait": {
-            "active": false,
+            "active": true,
             "wait": 4000
         },
         "mouseover": {
@@ -32,7 +32,7 @@
             "active": true
         },
         "back": {
-            "active": false
+            "active": true
         }
     }
 }

@@ -16,6 +16,7 @@ var Scenario = sce.Scenario;
 var sceGen = require('./scenarioGenerator.js');
 var addNewScenari = sceGen.addNewScenari;
 var createInitialScenario = sceGen.createInitialScenario;
+var addBackToLevelZeroScenari = sceGen.addBackToLevelZeroScenari;
 
 
 var Nightmare = require('nightmare');
@@ -126,7 +127,7 @@ function executeScenario(map, scenario, callback) {
                 executeScenario(map, scenario, callback)
             })
             .catch((err) => {
-                winston.error(`An action cannot be executed ${err}, scenario is aborded.`);
+                winston.error(`An action (${next_action}) cannot be executed (error: ${err}), the scenario is aborded.`);
                 callback()
             })
     } else {

@@ -86,7 +86,8 @@ function addFormScenario(map, form, current_node) {
         var new_scenario = new Scenario(current_node);
         type_actions.forEach((action) => new_scenario.addAction(action));
         check_actions.forEach((action) => new_scenario.addAction(action));
-        click_actions.forEach((action) => new_scenario.addAction(action));
+        //click_actions.forEach((action) => new_scenario.addAction(action));
+        if (click_actions.length > 0) new_scenario.addAction(click_actions[0]);
         new_scenario.addAction(new WaitAction(map.options.crawler.wait));
         new_scenario.root_node = current_node;
         scenarioManager.addScenarioToExecute(new_scenario);
@@ -150,3 +151,4 @@ function addBackToLevelZeroScenari(map, current_node) {
 
 module.exports.addNewScenari = addNewScenari;
 module.exports.createInitialScenario = createInitialScenario;
+module.exports.addBackToLevelZeroScenari = addBackToLevelZeroScenari;
