@@ -34,6 +34,8 @@ class SelectorAction extends Action {
     }
 }
 
+
+
 class ClickAction extends SelectorAction {
     attachTo(promise) {
         return promise.click(this.selector);
@@ -46,6 +48,30 @@ class MouseOverAction extends SelectorAction {
         return promise.mouseover(this.selector);
     }
 }
+
+class CheckAction extends SelectorAction {
+    attachTo(promise) {
+        return promise.check(this.selector);
+    }
+}
+
+
+class TypeAction extends Action {
+    constructor(selector, text) {
+        super();
+        this.selector = selector;
+        this.text = text;
+    }
+
+    attachTo(promise) {
+        return promise.type(this.selector, this.text);
+    }
+
+    toString() {
+        return `${super.toString()}: ${this.selector}, ${this.text}`;
+    }
+}
+
 
 class ScrollToAction extends Action {
     constructor(x, y) {
@@ -167,7 +193,9 @@ module.exports.ScenarioManager = ScenarioManager;
 module.exports.Scenario = Scenario;
 module.exports.GotoAction = GotoAction;
 module.exports.ClickAction = ClickAction;
+module.exports.CheckAction = CheckAction;
 module.exports.MouseOverAction = MouseOverAction;
+module.exports.TypeAction = TypeAction;
 module.exports.WaitAction = WaitAction;
 module.exports.ScrollToAction = ScrollToAction;
 module.exports.BackAction = BackAction;

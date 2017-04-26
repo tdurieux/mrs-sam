@@ -13,15 +13,18 @@ var WaitAction = sce.WaitAction;
 var ClickAction = sce.ClickAction;
 var ScrollToAction = sce.ScrollToAction;
 var MouseOverAction = sce.MouseOverAction;
+var CheckAction = sce.CheckAction;
+var TypeAction = sce.TypeAction;
 var BackAction = sce.BackAction;
 var Scenario = sce.Scenario;
 var ScenarioManager = sce.ScenarioManager;
+var htmlAnalysis = require('./htmlAnalysis.js');
 
 
 var Nightmare = require('nightmare');
 
 function crawlMap(map, callback) {
-    map.nightmare = Nightmare({ show: map.options.engine.show });
+    map.nightmare = Nightmare({ show: map.options.crawler.show });
     winston.info(`Nightmare has been initialized !`);
 
     registerEventListener(map);
@@ -31,7 +34,7 @@ function crawlMap(map, callback) {
     map.scenarioManager.addScenarioToExecute(initial_scenario);
     map.scenarioManager.current_node = map.root_node;
 
-    winston.info(`Start crawling of ${map.url} with ${map.options.engine.maxsteps} maximun steps in ${map.options.engine.time} min`);
+    winston.info(`Start crawling of ${map.url} with ${map.options.crawler.maxsteps} maximun steps in ${map.options.crawler.time} min`);
     crawl(map, callback);
 }
 
@@ -63,7 +66,7 @@ function registerEventListener(map) {
 function createInitialScenario(map) {
     var initScenario = new Scenario(map.root_node);
     initScenario.addAction(new GotoAction(map.url));
-    initScenario.addAction(new WaitAction(map.options.engine.wait));
+    initScenario.addAction(new WaitAction(map.options.crawler.wait));
     initScenario.root_node = map.root_node;
     winston.info(`An initial scenario has been created and registered to the ScenarioManager.`);
     return initScenario;
@@ -73,7 +76,7 @@ function createInitialScenario(map) {
 function crawl(map, callback) {
     var scenarioManager = map.scenarioManager;
     var nightmare = map.nightmare;
-    var hasTime = (present() - startTime) < (map.options.engine.time * 60 * 1000);
+    var hasTime = (present() - startTime) < (map.options.crawler.time * 60 * 1000);
 
     if (hasTime) {
         if (scenarioManager.hasScenarioToExecute()) {
@@ -109,7 +112,7 @@ function executeNextScenario(map, callback) {
     var scenarioManager = map.scenarioManager;
     var scenario = scenarioManager.nextScenarioToExecute();
 
-    if (scenario.size <= (map.options.engine.maxsteps * WAIT_ACTIONS_POWER_FACTOR)) {
+    if (scenario.size <= (map.options.crawler.maxsteps * WAIT_ACTIONS_POWER_FACTOR)) {
         winston.info(`Proceed: ${scenario}\n`);
         executeScenario(map, scenario, callback);
     } else {
@@ -145,86 +148,14 @@ function executeScenario(map, scenario, callback) {
 
 
 
-function htmlAnalysis() {
-    var hostname = window.location.hostname;
 
-    return {
-        hostname: hostname,
-        hash: generateHash(),
-        selectors: grabSelector(),
-        forms: grabForm()
-    };
-
-    function generateHash() {
-        //return document.querySelector('body').innerHTML.replace(/\s{2,10}/g, ' ');
-        return document.body.innerHTML.replace(/\s{2,10}/g, ' ');
-    }
-
-    function grabSelector() {
-        var selectors = new Array();
-        var a_links = document.getElementsByTagName('a');
-        for (var i = 0; i < a_links.length; i++) {
-            if (!isMailTo(a_links[i])) selectors.push(computeSelector(a_links[i]));
-        }
-
-        var img_links = document.getElementsByTagName('img');
-        for (var i = 0; i < img_links.length; i++) {
-            selectors.push(computeSelector(img_links[i]));
-        }
-        return selectors;
-
-    }
-
-    function grabForm() {
-        var forms = new Array();
-        var form_tag = document.getElementsByTagName('form');
-        for (var i = 0; i < form_tag.length; i++) {
-            var form = {form_selector:computeSelector(form_tag)};
-            form.inputs = new Array();
-            var inputs = form_tag[i].getElementsByTagName('input')
-            for (var i = 0; i < inputs.length; i++) {
-                form.inputs.push({
-                    selector: computeSelector(inputs[i]),
-                    name: undefined || inputs[i].getAttribute('name'),
-                    value: undefined || inputs[i].getAttribute('value'),
-                    type: undefined || inputs[i].getAttribute('type')
-                });
-            }
-            forms.push(form);
-        }
-        return forms;
-    }
-
-    function computeSelector(el) {
-        var names = [];
-        while (el.parentNode) {
-            if (el.id) {
-                names.unshift(`#${el.id}`);
-                break;
-            } else {
-                if (el == el.ownerDocument.documentElement)
-                    names.unshift(el.tagName);
-                else {
-                    for (var c = 1, e = el; e.previousElementSibling; e = e.previousElementSibling, c++);
-                    names.unshift(`${el.tagName}:nth-child(${c})`);
-                }
-                el = el.parentNode;
-            }
-        }
-        return names.join(" > ");
-    }
-
-    function isMailTo(a_link) {
-        return a_link.href.includes('mailto');
-    }
-}
 
 function handleEndOfAction(map, action, analysis_result) {
     var end_node_already_exists = map.existNodeWithHash(analysis_result.hash);
     var end_node = updateMap(map, action, analysis_result);
 
     if (!end_node_already_exists) {
-        if (end_node.level <= map.options.engine.maxsteps) {
+        if (end_node.level <= map.options.crawler.maxsteps) {
             addNewScenari(map, analysis_result, end_node);
             winston.info(`The action produces a new node. The crawler has created new scenario.`);
         } else {
@@ -275,49 +206,72 @@ function markError(map, link) {
 
 function addNewScenari(map, evaluate_res, current_node) {
     var is_locale = map.url.includes(evaluate_res.hostname);
-    if (map.options.scenario.click.active && is_locale) addNewClickScenari(map, evaluate_res, current_node);
+    if (map.options.scenario.click.active && is_locale) addClickScenari(map, evaluate_res, current_node);
     if (map.options.scenario.scroll.active && is_locale) addScrollToScenari(map, current_node);
     if (map.options.scenario.mouseover.active && is_locale) addMouseOverScenari(map, evaluate_res, current_node);
     if (map.options.scenario.wait.active && is_locale) addWaitScenari(map, current_node);
+    if (map.options.scenario.form.active && is_locale) addFormScenari(map, evaluate_res, current_node);
     if (map.options.scenario.back.active || !is_locale) addBackScenari(map, current_node);
 }
 
-function addNewClickScenari(map, evaluate_res, current_node) {
+function addClickScenari(map, evaluate_res, current_node) {
     winston.info(`${evaluate_res.selectors.length} selectors have been extracted and transformed into new scenario`);
     var scenarioManager = map.scenarioManager;
     for (var i = 0; i < evaluate_res.selectors.length; i++) {
         var new_scenario = new Scenario(current_node);
         var action = new ClickAction(evaluate_res.selectors[i]);
         new_scenario.addAction(action);
-        new_scenario.addAction(new WaitAction(map.options.engine.wait));
+        new_scenario.addAction(new WaitAction(map.options.crawler.wait));
         new_scenario.root_node = current_node;
         scenarioManager.addScenarioToExecute(new_scenario);
     }
+
+}
+
+function addFormScenari(map, evaluate_res, current_node) {
+    winston.info(`${evaluate_res.forms.length} forms have been extracted and transformed into new scenario`);
     for (var i = 0; i < evaluate_res.forms.length; i++) {
-        addNewFormScenari(map, evaluate_res.forms[i],current_node);
+        addFormScenario(map, evaluate_res.forms[i], current_node);
     }
 }
 
-function addNewFormScenaro(map, form, current_node) {
-    var text_inputs = [];
-    var password_inputs = [];
-    var radio_inputs = [];
-    var checkbox_inputs = [];
-    var button_inputs = [];
-    var submit_inputs = [];
+function addFormScenario(map, form, current_node) {
+    var scenarioManager = map.scenarioManager;
+    var type_actions = [];
+    var check_actions = [];
+    var click_actions = [];
     for (var i = 0; i < form.inputs.length; i++) {
         switch (form.inputs[i].type) {
-            case 'text': break;
-            case 'password': break;
-            case 'reset': break;
-            case 'radio': break;
-            case 'checkbox': break;
-            case 'button': break;
-            case 'submit': break;
-            
+            case 'text':
+                type_actions.push(new TypeAction(form.inputs[i].selector, "test"));
+                break;
+            case 'password':
+                type_actions.push(new TypeAction(form.inputs[i].selector, "test"));
+                break;
+            case 'reset':
+                break;
+            case 'radio':
+                check_actions.push(new CheckAction(form.inputs[i].selector));
+                break;
+            case 'checkbox':
+                check_actions.push(new CheckAction(form.inputs[i].selector));
+                break;
+            case 'button':
+                click_actions.push(new ClickAction(form.inputs[i].selector));
+                break;
+            case 'submit':
+                click_actions.push(new ClickAction(form.inputs[i].selector));
+                break;
         }
+
+        var new_scenario = new Scenario(current_node);
+        type_actions.forEach((action) => new_scenario.addAction(action));
+        check_actions.forEach((action) => new_scenario.addAction(action));
+        click_actions.forEach((action) => new_scenario.addAction(action));
+        new_scenario.addAction(new WaitAction(map.options.crawler.wait));
+        new_scenario.root_node = current_node;
+        scenarioManager.addScenarioToExecute(new_scenario);
     }
-    //TODO
 }
 
 function addScrollToScenari(map, current_node) {
@@ -325,7 +279,7 @@ function addScrollToScenari(map, current_node) {
     var new_scenario = new Scenario(current_node);
     var action = new ScrollToAction(map.options.scenario.scroll.scroll_x, map.options.scenario.scroll.scroll_y);
     new_scenario.addAction(action);
-    new_scenario.addAction(new WaitAction(map.options.engine.wait));
+    new_scenario.addAction(new WaitAction(map.options.crawler.wait));
     new_scenario.root_node = current_node;
     scenarioManager.addScenarioToExecute(new_scenario);
 }
@@ -336,7 +290,7 @@ function addMouseOverScenari(map, evaluate_res, current_node) {
         var new_scenario = new Scenario(current_node);
         var action = new MouseOverAction(evaluate_res.selectors[i]);
         new_scenario.addAction(action);
-        new_scenario.addAction(new WaitAction(map.options.engine.wait));
+        new_scenario.addAction(new WaitAction(map.options.crawler.wait));
         new_scenario.root_node = current_node;
         scenarioManager.addScenarioToExecute(new_scenario);
     }
@@ -347,7 +301,7 @@ function addWaitScenari(map, current_node) {
     var new_scenario = new Scenario(current_node);
     var action = new WaitAction(map.options.scenario.wait.wait);
     new_scenario.addAction(action);
-    new_scenario.addAction(new WaitAction(map.options.engine.wait));
+    new_scenario.addAction(new WaitAction(map.options.crawler.wait));
     new_scenario.root_node = current_node;
     scenarioManager.addScenarioToExecute(new_scenario);
 }
@@ -357,7 +311,7 @@ function addBackScenari(map, current_node) {
     var new_scenario = new Scenario(current_node);
     var action = new BackAction();
     new_scenario.addAction(action);
-    new_scenario.addAction(new WaitAction(map.options.engine.wait));
+    new_scenario.addAction(new WaitAction(map.options.crawler.wait));
     new_scenario.root_node = current_node;
     scenarioManager.addScenarioToExecute(new_scenario);
 }
@@ -368,7 +322,7 @@ function addBackToLevelZeroScenari(map, current_node) {
     for (var i = 1; i < current_node.level; i++) {
         var action = new BackAction();
         new_scenario.addAction(action);
-        new_scenario.addAction(new WaitAction(map.options.engine.wait));
+        new_scenario.addAction(new WaitAction(map.options.crawler.wait));
     }
     new_scenario.root_node = current_node;
     scenarioManager.addScenarioToExecute(new_scenario);
