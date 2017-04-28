@@ -15,8 +15,9 @@ module.exports = function() {
     }
 
     function generateStructuralDOMHash(element) {
-        var idAttribute = (element.attributes && element.hasAttribute("id")) ? `id="${element.getAttribute('id')}"` : "";
-        var openTagName = element.tagName ? `<${element.tagName}${idAttribute}>\n` : "";
+        //var idAttribute = (element.attributes && element.hasAttribute("id")) ? `id="${element.getAttribute('id')}"` : "";
+        var idAttribute = "";
+        var openTagName = element.tagName ? `<${element.tagName} ${idAttribute}>\n` : "";
         var hash = openTagName;
         for (var i = 0; i < element.childNodes.length; i++) {
             hash = hash + generateStructuralDOMHash(element.childNodes[i]) + '\n';

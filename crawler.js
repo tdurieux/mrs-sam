@@ -105,8 +105,12 @@ function executeNextScenario(map, callback) {
 
     if (scenario.size <= (map.options.crawler.maxsteps * WAIT_ACTIONS_POWER_FACTOR)) {
         winston.info(`Proceed: ${scenario}\n`);
-        executeScenario(map, scenario, callback);
+        executeScenario(map, scenario, () => {
+            scenario.from = undefined;
+            callback();
+        });
     } else {
+        scenario.from = undefined;
         callback();
     }
 
@@ -117,17 +121,19 @@ function executeScenario(map, scenario, callback) {
     var nightmare = map.nightmare;
     if (scenario.hasNext()) {
         var next_action = scenario.next();
-        next_action.from = scenario.root_node;
+        next_action.from = scenario.from;
         next_action.attachTo(nightmare)
             .evaluate(htmlAnalysis)
             .then(function(analysis_result) {
                 winston.info(`An action has been executed and after the HTML has been analyzed`);
-                scenario.root_node = handleEndOfAction(map, next_action, analysis_result);
-                map.scenarioManager.current_node = scenario.root_node;
+                scenario.from = handleEndOfAction(map, next_action, analysis_result);
+                map.scenarioManager.current_node = scenario.from;
                 executeScenario(map, scenario, callback)
             })
             .catch((err) => {
                 winston.error(`An action (${next_action}) cannot be executed (error: ${err}), the scenario is aborded.`);
+                next_action.executed = false;
+                next_action.from = undefined;
                 callback()
             })
     } else {
@@ -138,6 +144,9 @@ function executeScenario(map, scenario, callback) {
 
 
 function handleEndOfAction(map, action, analysis_result) {
+    action.executed = true;
+    markError(map, action);
+
     var end_node_already_exists = map.existNodeWithHash(analysis_result.hash);
     var end_node = updateMap(map, action, analysis_result);
 
@@ -150,7 +159,7 @@ function handleEndOfAction(map, action, analysis_result) {
             winston.info(`Maxstep : created a back scenario.`);
         }
     }
-
+    action.from = undefined;
     return end_node;
 }
 
@@ -177,6 +186,7 @@ function updateMap(map, action, analysis_result) {
 
     link.actions.push(action);
     markError(map, link);
+    cleanError(map);
 
     map.current_node = end_node;
 
@@ -184,9 +194,13 @@ function updateMap(map, action, analysis_result) {
 }
 
 
-function markError(map, link) {
-    map.response_error.forEach((err) => link.errors.push(err));
-    map.html_error.forEach((err) => link.errors.push(err));
+function markError(map, ent) {
+    ent.errors = ent.erros || [];
+    map.response_error.forEach((err) => ent.errors.push(err));
+    map.html_error.forEach((err) => ent.errors.push(err));
+}
+
+function cleanError(map) {
     map.response_error = [];
     map.html_error = [];
 }

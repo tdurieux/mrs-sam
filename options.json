@@ -1,10 +1,10 @@
 {
     "crawler": {
         "maxsteps": 5,
-        "time": 3,
+        "time": 5,
         "wait": 1000,
         "backmode": true,
-        "show": false
+        "show": true
     },
     "diff": {
         "active": false,
@@ -25,7 +25,7 @@
             "wait": 4000
         },
         "mouseover": {
-            "active": false,
+            "active": true,
             "selectors": ["a", "div", "img"]
         },
         "form": {

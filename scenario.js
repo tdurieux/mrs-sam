@@ -118,6 +118,7 @@ class Scenario {
     constructor(from) {
         this.actions = [];
         this.from = from;
+        this.index = undefined;
     }
 
     toString() {
@@ -125,33 +126,30 @@ class Scenario {
     }
 
     addAction(action) {
-        this.actions.push(action);
-    }
-
-    attachTo(promise) {
-        var returnedPromise = promise;
-        this.actions.map(a => { returnedPromise = a.attachTo(returnedPromise); });
-        return returnedPromise;
+        if (this.index === undefined ) {
+            this.index = 0;
+        }
+        if (this.index === 0) {
+            this.actions.push(action);
+        }
+        
     }
 
     get size() {
         return this.actions.length;
     }
 
-    getLastAction() {
-        if ((this.actions.length) - 2 >= 0) {
-            return this.actions[this.actions.length - 2];
-        } else {
-            return undefined;
-        }
-    }
-
     hasNext() {
-        return this.actions.length !== 0;
+        if (this.index === undefined) {
+            return false;
+        } else {
+            return this.index < this.actions.length;
+        }
+
     }
 
     next() {
-        return this.actions.shift();
+        return this.actions[this.index++];
     }
 }
 
@@ -168,7 +166,7 @@ class ScenarioManager {
     }
 
     nextScenarioToExecute() {
-        var candidate = this.toexecute.filter((scenario) => scenario.root_node === this.current_node);
+        var candidate = this.toexecute.filter((scenario) => scenario.from === this.current_node);
         var id = Math.floor(Math.random() * candidate.length);
         var scenario = candidate[id]; 
         this.toexecute.splice(this.toexecute.indexOf(scenario), 1);
@@ -178,7 +176,7 @@ class ScenarioManager {
     }
 
     hasScenarioToExecute() {
-        return this.toexecute.filter((scenario) => scenario.root_node === this.current_node).length > 0;
+        return this.toexecute.filter((scenario) => scenario.from === this.current_node).length > 0;
     }
 
     numberOfScenarioToExecute() {

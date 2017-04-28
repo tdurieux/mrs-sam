@@ -17,7 +17,6 @@ function createInitialScenario(map) {
     var initScenario = new Scenario(map.root_node);
     initScenario.addAction(new GotoAction(map.url));
     initScenario.addAction(new WaitAction(map.options.crawler.wait));
-    initScenario.root_node = map.root_node;
     winston.info(`An initial scenario has been created and registered to the ScenarioManager.`);
     return initScenario;
 }
@@ -41,7 +40,6 @@ function addClickScenari(map, evaluate_res, current_node) {
         var action = new ClickAction(evaluate_res.selectors[i]);
         new_scenario.addAction(action);
         new_scenario.addAction(new WaitAction(map.options.crawler.wait));
-        new_scenario.root_node = current_node;
         scenarioManager.addScenarioToExecute(new_scenario);
     }
 
@@ -89,7 +87,6 @@ function addFormScenario(map, form, current_node) {
         //click_actions.forEach((action) => new_scenario.addAction(action));
         if (click_actions.length > 0) new_scenario.addAction(click_actions[0]);
         new_scenario.addAction(new WaitAction(map.options.crawler.wait));
-        new_scenario.root_node = current_node;
         scenarioManager.addScenarioToExecute(new_scenario);
     }
 }
@@ -100,7 +97,6 @@ function addScrollToScenari(map, current_node) {
     var action = new ScrollToAction(map.options.scenario.scroll.scroll_x, map.options.scenario.scroll.scroll_y);
     new_scenario.addAction(action);
     new_scenario.addAction(new WaitAction(map.options.crawler.wait));
-    new_scenario.root_node = current_node;
     scenarioManager.addScenarioToExecute(new_scenario);
 }
 
@@ -111,7 +107,6 @@ function addMouseOverScenari(map, evaluate_res, current_node) {
         var action = new MouseOverAction(evaluate_res.selectors[i]);
         new_scenario.addAction(action);
         new_scenario.addAction(new WaitAction(map.options.crawler.wait));
-        new_scenario.root_node = current_node;
         scenarioManager.addScenarioToExecute(new_scenario);
     }
 }
@@ -122,7 +117,6 @@ function addWaitScenari(map, current_node) {
     var action = new WaitAction(map.options.scenario.wait.wait);
     new_scenario.addAction(action);
     new_scenario.addAction(new WaitAction(map.options.crawler.wait));
-    new_scenario.root_node = current_node;
     scenarioManager.addScenarioToExecute(new_scenario);
 }
 
@@ -132,7 +126,6 @@ function addBackScenari(map, current_node) {
     var action = new BackAction();
     new_scenario.addAction(action);
     new_scenario.addAction(new WaitAction(map.options.crawler.wait));
-    new_scenario.root_node = current_node;
     scenarioManager.addScenarioToExecute(new_scenario);
 }
 
@@ -144,7 +137,6 @@ function addBackToLevelZeroScenari(map, current_node) {
         new_scenario.addAction(action);
         new_scenario.addAction(new WaitAction(map.options.crawler.wait));
     }
-    new_scenario.root_node = current_node;
     scenarioManager.addScenarioToExecute(new_scenario);
 }
 
