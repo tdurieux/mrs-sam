@@ -9,23 +9,18 @@ module.exports = function() {
     };
 
     function generateHash() {
-        //return document.querySelector('body').innerHTML.replace(/\s{2,10}/g, ' ');
-        //return document.body.innerHTML.replace(/\s{2,10}/g, ' ');
         return generateStructuralDOMHash(document.body);
     }
 
     function generateStructuralDOMHash(element) {
-        //var idAttribute = (element.attributes && element.hasAttribute("id")) ? `id="${element.getAttribute('id')}"` : "";
-        //var idAttribute = "";
-        //var openTagName = element.tagName ? `<${element.tagName} ${idAttribute}>` : "";
-        var openTagName = element.tagName ? `<${element.tagName}` : "";
+        var openTagName = element.tagName ? `<${element.tagName}>` : "";
         var hash = openTagName;
         for (var i = 0; i < element.childNodes.length; i++) {
             hash = hash + generateStructuralDOMHash(element.childNodes[i]);
         }
         var closeTagName = element.tagName ? `</${element.tagName}>` : "";
         hash = hash + closeTagName;
-        return hash.replace(/\s{2,10}/g,' ');
+        return hash.replace(/\s{2,10}/g, ' ');
     }
 
     function grabSelector() {
@@ -66,18 +61,13 @@ module.exports = function() {
     function computeSelector(el) {
         var names = [];
         while (el.parentNode) {
-            if (el.id) {
-                names.unshift(`#${el.id}`);
-                break;
-            } else {
-                if (el == el.ownerDocument.documentElement)
-                    names.unshift(el.tagName);
-                else {
-                    for (var c = 1, e = el; e.previousElementSibling; e = e.previousElementSibling, c++);
-                    names.unshift(`${el.tagName}:nth-child(${c})`);
-                }
-                el = el.parentNode;
+            if (el == el.ownerDocument.documentElement)
+                names.unshift(el.tagName);
+            else {
+                for (var c = 1, e = el; e.previousElementSibling; e = e.previousElementSibling, c++);
+                names.unshift(`${el.tagName}:nth-child(${c})`);
             }
+            el = el.parentNode;
         }
         return names.join(" > ");
     }
@@ -86,3 +76,24 @@ module.exports = function() {
         return a_link.href.includes('mailto');
     }
 }
+
+
+/*function computeSelector(el) {
+    var names = [];
+    while (el.parentNode) {
+        if (el.id) {
+            names.unshift(`#${el.id}`);
+            break;
+        } else {
+            if (el == el.ownerDocument.documentElement)
+                names.unshift(el.tagName);
+            else {
+                for (var c = 1, e = el; e.previousElementSibling; e = e.previousElementSibling, c++);
+                names.unshift(`${el.tagName}:nth-child(${c})`);
+            }
+            el = el.parentNode;
+        }
+    }
+    return names.join(" > ");
+}
+*/

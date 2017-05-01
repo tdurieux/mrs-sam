@@ -39,7 +39,7 @@ class SiteMap {
         this.root_node.is_root = true;
         this.root_node.is_locale = true;
         this.root_node.is_html = false;
-        this.root_node.level = 0;
+        this.current_node = this.root_node;
         this.nodes.push(this.root_node);
     }
 
@@ -91,6 +91,34 @@ class SiteMap {
         return `${this.url}`;
     }
 
+    updateMap(action, analysis_result) {
+        if (action.constructor.name === "GotoAction") this.current_node = this.root_node;
+        var from_node = this.current_node;
+        var end_node_already_exists = this.existNodeWithHash(analysis_result.hash);
+        var end_node = this.getNodeWithHash(analysis_result.hash);
+
+        if (end_node === undefined) {
+            var end_node_hash = analysis_result.hash;
+            var is_locale = this.url.includes(analysis_result.hostname);
+            if (!is_locale) {
+                end_node_hash = analysis_result.hostname
+            }
+            end_node = this.createNode(end_node_hash);
+            end_node.level = from_node.level + 1;
+            end_node.is_locale = is_locale;
+        }
+
+        var link = this.getLink(from_node, end_node);
+        if (link === undefined) {
+            link = this.createLink(from_node, end_node);
+        }
+
+        link.actions.push(action);
+        link.errors = link.errors.concat(action.errors);
+
+        this.current_node = end_node;
+    }
+
     generateVisScript() {
         
         const ROOT_NODE_COLOR = "orange";
@@ -101,9 +129,7 @@ class SiteMap {
         var script = `var map_url = "${this.url}";\n\n
             var map_options = ${JSON.stringify(this.options.crawler)};\n\n
             var map_date = "${this.date}";\n\n
-            var left_scenario = ${this.scenarioManager.numberOfScenarioToExecute()};\n\n
-            var executed_scenario = ${this.scenarioManager.numberOfExecutedScenario()};\n\n
-
+            
             var map_nodes = new vis.DataSet([\n`;
 
 

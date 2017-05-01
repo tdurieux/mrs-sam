@@ -9,15 +9,35 @@ var url = argv.url || 'http://localhost:8080';
 var out = argv.out || url.slice(7, url.length).replace('.', '_').replace(':', '_') + "_" + options.crawler.time;
 
 //Import of other modules (this should be improved somehow)
-var SiteMap = require('./sitemap.js').SiteMap;
-var crawlMap = require('./crawler.js').crawlMap;
+var Crawler = require('./crawler.js').Crawler;
 
-var map = new SiteMap(url, options);
-
-
+var crawler = new Crawler(url, options);
+crawler.start(err, success);
 
 
-crawlMap(map, function(err, succ) {
+function err(msg) {
+    console.log(msg);
+}
+
+function success(result) {
+    saveExecutedScenario(result.executedScenario);
+    if (options.map.active) saveSiteMap(result.siteMap);
+}
+
+function saveExecutedScenario(executed) {
+    var fs = require('fs');
+    fs.writeFileSync(`./test/server/${out}_scenar.js`, JSON.stringify(executed));
+
+}
+
+function saveSiteMap(map) {
+    var fs = require('fs');
+    fs.writeFileSync(`./test/server/${out}_map.js`, map.generateVisScript());
+}
+
+
+
+/*crawlMap(map, function(err, succ) {
 
     console.log('crawling is done');
     var fs = require('fs');
@@ -44,3 +64,4 @@ function computeDiff(map) {
         //l.diff = jsdiff.diffWordsWithSpace(l.from.hash, l.to.hash);		
     })
 }
+*/

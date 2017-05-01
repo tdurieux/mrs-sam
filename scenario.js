@@ -115,9 +115,8 @@ class BackAction extends Action {
 
 
 class Scenario {
-    constructor(from) {
+    constructor() {
         this.actions = [];
-        this.from = from;
         this.index = undefined;
     }
 
@@ -135,7 +134,7 @@ class Scenario {
         
     }
 
-    get size() {
+    get level() {
         return this.actions.length;
     }
 
@@ -151,32 +150,36 @@ class Scenario {
     next() {
         return this.actions[this.index++];
     }
+
+    duplicate() {
+        var dupication = new Scenario();
+        this.actions.forEach(ac => dupication.addAction(ac));
+        return dupication;
+    }
 }
 
 
 class ScenarioManager {
-    constructor() {
+    constructor(maxsteps) {
         this.executed = [];
         this.toexecute = [];
-        this.executed_scenario = 0;
+        this.maxsteps = maxsteps;
     }
 
     addScenarioToExecute(scenario) {
-        this.toexecute.push(scenario);
+        if (scenario.level <= this.maxsteps) this.toexecute.push(scenario);
     }
 
     nextScenarioToExecute() {
-        var candidate = this.toexecute.filter((scenario) => scenario.from === this.current_node);
-        var id = Math.floor(Math.random() * candidate.length);
-        var scenario = candidate[id]; 
+        var id = Math.floor(Math.random() * this.toexecute.length);
+        var scenario = this.toexecute[id]; 
         this.toexecute.splice(this.toexecute.indexOf(scenario), 1);
         this.executed.push(scenario);
-        this.executed_scenario++;
         return scenario;
     }
 
     hasScenarioToExecute() {
-        return this.toexecute.filter((scenario) => scenario.from === this.current_node).length > 0;
+        return this.toexecute.length > 0;
     }
 
     numberOfScenarioToExecute() {
@@ -184,7 +187,7 @@ class ScenarioManager {
     }
 
     numberOfExecutedScenario() {
-        return this.executed_scenario;
+        return this.executed.length;
     }
 }
 

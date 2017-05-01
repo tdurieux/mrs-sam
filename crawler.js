@@ -9,202 +9,175 @@ var startTime = present();
 //Import of other modules (this should be improved somehow)
 var htmlAnalysis = require('./htmlAnalysis.js');
 
-var sce = require('./scenario.js');
-var ScenarioManager = sce.ScenarioManager;
-var Scenario = sce.Scenario;
 
-var sceGen = require('./scenarioGenerator.js');
-var addNewScenari = sceGen.addNewScenari;
-var createInitialScenario = sceGen.createInitialScenario;
-var addBackToLevelZeroScenari = sceGen.addBackToLevelZeroScenari;
-
+var ScenarioManager = require('./scenario.js').ScenarioManager;
+var ScenarioGenerator = require('./scenarioGenerator.js').ScenarioGenerator;
+var SiteMap = require('./siteMap.js').SiteMap;
 
 var Nightmare = require('nightmare');
 
-function crawlMap(map, callback) {
-    map.nightmare = Nightmare({ show: map.options.crawler.show });
-    winston.info(`Nightmare has been initialized !`);
+class Crawler {
+    constructor(url, options) {
+        this.url = url;
+        this.options = options;
+        this.scenarioManager = new ScenarioManager(this.options.crawler.maxsteps);
+        this.scenarioGenerator = new ScenarioGenerator(this.url, this.options);
 
-    registerEventListener(map);
+        var initial_scenario = this.scenarioGenerator.generateInitialScenario();
+        this.scenarioManager.addScenarioToExecute(initial_scenario);
 
-    map.scenarioManager = new ScenarioManager();
-    var initial_scenario = createInitialScenario(map)
-    map.scenarioManager.addScenarioToExecute(initial_scenario);
-    map.scenarioManager.current_node = map.root_node;
-
-    winston.info(`Start crawling of ${map.url} with ${map.options.crawler.maxsteps} maximun steps in ${map.options.crawler.time} min`);
-    crawl(map, callback);
-}
-
-function registerEventListener(map) {
-    map.response_error = [];
-    map.html_error = [];
-
-    map.nightmare.on('console', function(type, arguments) {
-            if (type === 'error') {
-                map.html_error.push(arguments)
-            }
-        })
-        .on('page', function(type, message, stack) {
-            if (type === 'error') {
-                map.html_error.push(message);
-            }
-        })
-        .on('did-get-response-details', function(event, status, newURL, originalURL, code, referrer, headers, resourceType) {
-            const HTML_ERROR_CODE = 400;
-            if (code >= HTML_ERROR_CODE) {
-                winston.error(`An error HTTP has been received (code: ${code}, url:${newURL})`);
-                map.response_error.push(code);
-            }
-        });
-
-    winston.info(`EventListerners have been initialized and setted !`);
-}
+        if (options.map.active) {
+            this.siteMap = new SiteMap(this.url, this.options);
+        }
+    }
 
 
 
+    start(errcallback, okcallback) {
+        this.nightmare = Nightmare({ show: this.options.crawler.show });
+        winston.info(`Nightmare has been initialized !`);
 
-function crawl(map, callback) {
-    var scenarioManager = map.scenarioManager;
-    var nightmare = map.nightmare;
-    var hasTime = (present() - startTime) < (map.options.crawler.time * 60 * 1000);
+        this.registerEventListener();
+        winston.info(`Start crawling of ${this.url} with ${this.options.crawler.maxsteps} maximun steps in ${this.options.crawler.time} min`);
+        this.crawl(errcallback, okcallback);
+    }
 
-    if (hasTime) {
-        if (scenarioManager.hasScenarioToExecute()) {
-            executeNextScenario(map, () => {
-                crawl(map, callback);
+    registerEventListener() {
+        this.response_error = [];
+        this.html_error = [];
+
+        this.nightmare.on('console', (type, args) => {
+                if (type === 'error') {
+                    this.html_error.push(args)
+                }
+            })
+            .on('page', (type, message, stack) => {
+                if (type === 'error') {
+                    this.html_error.push(message);
+                }
+            })
+            .on('did-get-response-details', (event, status, newURL, originalURL, code, referrer, headers, resourceType) => {
+                const HTML_ERROR_CODE = 400;
+                if (code >= HTML_ERROR_CODE) {
+                    winston.error(`An error HTTP has been received (code: ${code}, url:${newURL})`);
+                    this.response_error.push(code);
+                }
             });
+
+        winston.info(`EventListerners have been initialized and setted !`);
+    }
+
+
+
+
+    crawl(errcallback, okcallback) {
+        var scenarioManager = this.scenarioManager;
+        var nightmare = this.nightmare;
+        var hasTime = (present() - startTime) < (this.options.crawler.time * 60 * 1000);
+
+        if (hasTime) {
+            if (scenarioManager.hasScenarioToExecute()) {
+                this.executeNextScenario(
+                    () => this.crawl(errcallback, okcallback),
+                    () => this.crawl(errcallback, okcallback));
+            } else {
+                var initial_scenario = this.scenarioGenerator.generateInitialScenario();
+                this.scenarioManager.addScenarioToExecute(initial_scenario);
+                this.crawl(errcallback, okcallback);
+            }
         } else {
-            var initial_scenario = createInitialScenario(map)
-            map.scenarioManager.addScenarioToExecute(initial_scenario);
-            map.scenarioManager.current_node = map.root_node;
-            crawl(map, callback);
+            nightmare.end()
+                .then(res => {
+                    winston.info(`Finished crawling`);
+                    var endTime = present();
+                    winston.info(`Process duration: ${endTime - startTime} ms`);
+                    var result = {
+                        duration: endTime - startTime,
+                        executedScenario: this.scenarioManager.executed
+                    };
+                    if (this.siteMap) result.siteMap = this.siteMap;
+                    okcallback(result);
+                })
+                .catch(err => {
+                    winston.error(`Error finishing crawling: ${err}`);
+                    errcallback(err);
+                });
         }
-    } else {
-        nightmare.end()
-            .then(res => {
-                winston.info(`Finished crawling, found ${map.nodes.length} nodes and ${map.links.length} links`);
-                var endTime = present();
-                winston.info(`Process duration: ${endTime - startTime} ms`);
-                callback(null, `Finished crawling, found ${map.nodes.length} nodes and ${map.links.length} links`);
-            })
-            .catch(err => {
-                winston.error(`Error finishing crawling: ${err}, found ${map.nodes.length} nodes and ${map.links.length} links`);
-                callback(`Error finishing crawling: ${err}, rfound ${map.nodes.length} nodes and ${map.links.length} links`);
-            });
-    }
-}
-
-
-function executeNextScenario(map, callback) {
-    const WAIT_ACTIONS_POWER_FACTOR = 2;
-
-    var nightmare = map.nightmare;
-    var scenarioManager = map.scenarioManager;
-    var scenario = scenarioManager.nextScenarioToExecute();
-
-    if (scenario.size <= (map.options.crawler.maxsteps * WAIT_ACTIONS_POWER_FACTOR)) {
-        winston.info(`Proceed: ${scenario}\n`);
-        executeScenario(map, scenario, () => {
-            scenario.from = undefined;
-            callback();
-        });
-    } else {
-        scenario.from = undefined;
-        callback();
     }
 
-}
 
+    executeNextScenario(errcallback, okcallback) {
+        var nightmare = this.nightmare;
+        var scenarioManager = this.scenarioManager;
+        var scenario = scenarioManager.nextScenarioToExecute();
 
-function executeScenario(map, scenario, callback) {
-    var nightmare = map.nightmare;
-    if (scenario.hasNext()) {
-        var next_action = scenario.next();
-        next_action.from = scenario.from;
-        next_action.attachTo(nightmare)
-            .evaluate(htmlAnalysis)
-            .then(function(analysis_result) {
-                winston.info(`An action has been executed and after the HTML has been analyzed`);
-                scenario.from = handleEndOfAction(map, next_action, analysis_result);
-                map.scenarioManager.current_node = scenario.from;
-                executeScenario(map, scenario, callback)
-            })
-            .catch((err) => {
-                winston.error(`An action (${next_action}) cannot be executed (error: ${err}), the scenario is aborded.`);
-                next_action.executed = false;
-                next_action.from = undefined;
-                callback()
-            })
-    } else {
-        callback();
-    }
-}
-
-
-
-function handleEndOfAction(map, action, analysis_result) {
-    action.executed = true;
-    markError(map, action);
-
-    var end_node_already_exists = map.existNodeWithHash(analysis_result.hash);
-    var end_node = updateMap(map, action, analysis_result);
-
-    if (!end_node_already_exists) {
-        if (end_node.level <= map.options.crawler.maxsteps) {
-            addNewScenari(map, analysis_result, end_node);
-            winston.info(`The action produces a new node. The crawler has created new scenario.`);
+        if (scenario) {
+            winston.info(`Proceed: ${scenario}\n`);
+            this.executeScenario(scenario,
+                () => {
+                    errcallback();
+                },
+                () => {
+                    okcallback();
+                });
         } else {
-            addBackToLevelZeroScenari(map, end_node);
-            winston.info(`Maxstep : created a back scenario.`);
+            okcallback();
+        }
+
+    }
+
+
+    executeScenario(scenario, errcallback, okcallback) {
+        var nightmare = this.nightmare;
+        if (scenario.hasNext()) {
+            var next_action = scenario.next();
+            next_action.attachTo(nightmare)
+                .wait(this.options.crawler.wait)
+                .evaluate(htmlAnalysis)
+                .then(analysis_result => {
+                    winston.info(`An action has been executed and after the HTML has been analyzed`);
+                    this.handleEndOfAction(next_action, analysis_result);
+                    if (!scenario.hasNext()) {
+                        this.scenarioGenerator.generateNewScenari(scenario, analysis_result).forEach(sc => this.scenarioManager.addScenarioToExecute(sc));
+                    }
+                    this.executeScenario(scenario, errcallback, okcallback)
+                })
+                .catch((err) => {
+                    winston.error(`An action (${next_action}) cannot be executed (error: ${err}), the scenario is aborded.`);
+                    next_action.executed = false;
+                    errcallback()
+                })
+        } else {
+            okcallback();
         }
     }
-    action.from = undefined;
-    return end_node;
-}
 
-function updateMap(map, action, analysis_result) {
-    var from_node = action.from;
-    var end_node_already_exists = map.existNodeWithHash(analysis_result.hash);
-    var end_node = map.getNodeWithHash(analysis_result.hash);
 
-    if (end_node === undefined) {
-        var end_node_hash = analysis_result.hash;
-        var is_locale = map.url.includes(analysis_result.hostname);
-        if (!is_locale) {
-            end_node_hash = analysis_result.hostname
+
+    handleEndOfAction(action, analysis_result) {
+        action.executed = true;
+        this.markError(action);
+        this.cleanError();
+
+        if (this.siteMap) {
+            this.siteMap.updateMap(action, analysis_result);
         }
-        end_node = map.createNode(end_node_hash);
-        end_node.level = from_node.level + 1;
-        end_node.is_locale = is_locale;
     }
 
-    var link = map.getLink(from_node, end_node);
-    if (link === undefined) {
-        link = map.createLink(from_node, end_node);
+
+
+
+    markError(ent) {
+        ent.errors = ent.erros || [];
+        this.response_error.forEach((err) => ent.errors.push(err));
+        this.html_error.forEach((err) => ent.errors.push(err));
     }
 
-    link.actions.push(action);
-    markError(map, link);
-    cleanError(map);
+    cleanError() {
+        this.response_error = [];
+        this.html_error = [];
+    }
 
-    map.current_node = end_node;
-
-    return end_node;
 }
 
-
-function markError(map, ent) {
-    ent.errors = ent.erros || [];
-    map.response_error.forEach((err) => ent.errors.push(err));
-    map.html_error.forEach((err) => ent.errors.push(err));
-}
-
-function cleanError(map) {
-    map.response_error = [];
-    map.html_error = [];
-}
-
-
-
-module.exports.crawlMap = crawlMap;
+module.exports.Crawler = Crawler;

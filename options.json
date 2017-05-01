@@ -1,10 +1,13 @@
 {
     "crawler": {
         "maxsteps": 5,
-        "time": 5,
+        "time": 20,
         "wait": 1000,
-        "backmode": true,
         "show": true
+    },
+    "map": {
+        "active": true,
+        "state": "STRUCTURAL"
     },
     "diff": {
         "active": false,
@@ -16,16 +19,16 @@
             "selectors": ["a", "div", "img"]
         },
         "scroll": {
-            "active": true,
+            "active": false,
             "scroll_x": 2000,
             "scroll_y": 4000
         },
         "wait": {
-            "active": true,
+            "active": false,
             "wait": 4000
         },
         "mouseover": {
-            "active": true,
+            "active": false,
             "selectors": ["a", "div", "img"]
         },
         "form": {
