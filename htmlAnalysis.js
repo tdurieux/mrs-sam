@@ -16,15 +16,16 @@ module.exports = function() {
 
     function generateStructuralDOMHash(element) {
         //var idAttribute = (element.attributes && element.hasAttribute("id")) ? `id="${element.getAttribute('id')}"` : "";
-        var idAttribute = "";
-        var openTagName = element.tagName ? `<${element.tagName} ${idAttribute}>\n` : "";
+        //var idAttribute = "";
+        //var openTagName = element.tagName ? `<${element.tagName} ${idAttribute}>` : "";
+        var openTagName = element.tagName ? `<${element.tagName}` : "";
         var hash = openTagName;
         for (var i = 0; i < element.childNodes.length; i++) {
-            hash = hash + generateStructuralDOMHash(element.childNodes[i]) + '\n';
+            hash = hash + generateStructuralDOMHash(element.childNodes[i]);
         }
-        var closeTagName = element.tagName ? `</${element.tagName}>\n` : "";
+        var closeTagName = element.tagName ? `</${element.tagName}>` : "";
         hash = hash + closeTagName;
-        return hash;
+        return hash.replace(/\s{2,10}/g,' ');
     }
 
     function grabSelector() {
