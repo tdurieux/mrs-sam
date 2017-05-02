@@ -114,7 +114,7 @@ class Crawler {
                     var result = {
                         duration: endTime - startTime,
                         executedScenario: this.scenarioManager.executed,
-                        numberOfUnexecutedScenario: this.ScenarioManager.toexecute.length
+                        numberOfUnexecutedScenario: this.scenarioManager.toexecute.length
                     };
                     if (this.siteMap) result.siteMap = this.siteMap;
                     okcallback(result);
@@ -189,7 +189,7 @@ class Crawler {
 
 
     markError(ent) {
-        ent.errors = ent.erros || [];
+        ent.errors = ent.errors || [];
         this.response_error.forEach((err) => ent.errors.push(err));
         this.html_error.forEach((err) => ent.errors.push(err));
     }
