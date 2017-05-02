@@ -39,7 +39,10 @@ class Crawler {
 
         this.registerEventListener();
         winston.info(`Start crawling of ${this.url} with ${this.options.crawler.maxsteps} maximun steps in ${this.options.crawler.time} min`);
-        this.crawl(errcallback, okcallback);
+
+        this.preCrawl(errcallback, () => {
+            this.crawl(errcallback, okcallback);
+        })
     }
 
     registerEventListener() {
@@ -65,6 +68,23 @@ class Crawler {
             });
 
         winston.info(`EventListerners have been initialized and setted !`);
+    }
+
+    preCrawl(errcallback, okcallback) {
+        okcallback();
+
+        //Uncomment this if the crawler needs a specific preCrawl scenario (i.e. Facebook Login)
+        /*
+        this.nightmare
+                    .goto(this.url)
+                    .wait(1000)
+                    .type("#email", "")
+                    .type("#pass", "")
+                    .wait(1000)
+                    .click("#u_0_s")
+                    .wait(4000)
+                    .then(okcallback)
+                    .catch(errcallback);*/
     }
 
 
@@ -93,7 +113,8 @@ class Crawler {
                     winston.info(`Process duration: ${endTime - startTime} ms`);
                     var result = {
                         duration: endTime - startTime,
-                        executedScenario: this.scenarioManager.executed
+                        executedScenario: this.scenarioManager.executed,
+                        numberOfUnexecutedScenario: this.ScenarioManager.toexecute.length
                     };
                     if (this.siteMap) result.siteMap = this.siteMap;
                     okcallback(result);
