@@ -115,9 +115,37 @@ class BackAction extends Action {
 
 
 class Scenario {
-    constructor() {
+
+    constructor(actionsJSON) {
         this.actions = [];
         this.index = undefined;
+        if (actionsJSON) {
+            actionsJSON.forEach(ac => {
+                this.addAction(this.createAction(ac));
+            });
+        }
+    }
+
+    createAction(actionJSON) {
+        switch (actionJSON.type) {
+            case "GotoAction":
+                return new GotoAction(actionJSON.url);
+            case "ClickAction":
+                return new ClickAction(actionJSON.selector);
+            case "CheckAction":
+                return new CheckAction(actionJSON.selector);
+            case "MouseOverAction":
+                return new MouseOverAction(actionJSON.selector);
+            case "TypeAction":
+                return new TypeAction(actionJSON.selector, actionJSON.text);
+            case "ScrollToAction":
+                return new ScrollToAction(actionJSON.x, actionJSON.x);
+            case "WaitAction":
+                return new WaitAction(actionJSON.ms);
+            case "BackAction":
+                return new BackAction();
+        }
+        return new WaitAction(1000);
     }
 
     toString() {
@@ -125,13 +153,13 @@ class Scenario {
     }
 
     addAction(action) {
-        if (this.index === undefined ) {
+        if (this.index === undefined) {
             this.index = 0;
         }
         if (this.index === 0) {
             this.actions.push(action);
         }
-        
+
     }
 
     get level() {
@@ -172,7 +200,7 @@ class ScenarioManager {
 
     nextScenarioToExecute() {
         var id = Math.floor(Math.random() * this.toexecute.length);
-        var scenario = this.toexecute[id]; 
+        var scenario = this.toexecute[id];
         this.toexecute.splice(this.toexecute.indexOf(scenario), 1);
         this.executed.push(scenario);
         return scenario;
