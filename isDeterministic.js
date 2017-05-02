@@ -17,19 +17,19 @@ var rootPages = []
 });
 */
 
-/*fetchRootPageAndGenerateHash(n, rootPages, generateStructuralWithIdPageHash, () => {
+fetchRootPageAndGenerateHash(n, rootPages, generateStructuralWithIdPageHash, () => {
     var oneDiff = findOneDiff();
     var isDeterministic = oneDiff === undefined ? true : false ;
     console.log(`${url} Structural with ID deterministic is ${isDeterministic}`);
-});*/
+});
 
 
-fetchRootPageAndGenerateHash(n, rootPages, generateStructuralPageHash, () => {
+/*fetchRootPageAndGenerateHash(n, rootPages, generateStructuralPageHash, () => {
     var oneDiff = findOneDiff();
     var isDeterministic = oneDiff === undefined ? true : false ;
     console.log(`${url} Structural deterministic is ${isDeterministic}`);
 });
-
+*/
 
 
 

@@ -1,151 +1,151 @@
-var  argv  =  require('yargs')
-    .usage('$0 player.js --in=[string] --url=[string]').argv;
-
-var sce  = require('./scenario.js');
+var sce = require('./scenario.js');
 var ScenarioManager = sce.ScenarioManager;
 var Scenario = sce.Scenario;
 
 var Nightmare = require('Nightmare');
-var nightmare = Nightmare({show:true});
 
-response_error = [];
-html_error = [];
+class Player {
+    constructor(url, scenari) {
+        this.url = url;
+        this.scenari = scenari;
+        this.nightmare = Nightmare();
+        this.response_error = [];
+        this.html_error = [];
+        
 
-nightmare.on('console', (type, args) => {
-        if (type === 'error') {
-            html_error.push(args)
-        }
-    })
-    .on('page', (type, message, stack) => {
-        if (type === 'error') {
-            html_error.push(message);
-        }
-    })
-    .on('did-get-response-details', (event, status, newURL, originalURL, code, referrer, headers, resourceType) => {
-        const HTML_ERROR_CODE = 400;
-        if (code >= HTML_ERROR_CODE) {
-            response_error.push(code);
-        }
-    });
+        this.scenarioManager = new ScenarioManager(100);
+        this.scenari.forEach(sc => {
+            var new_scenario = new Scenario(sc.actions);
+            this.scenarioManager.addScenarioToExecute(new_scenario);
+        });
 
+        this.registerListener();
+    }
 
-var fs = require('fs');
-var fileName = argv.in || "./test/server/localhost_8080_1_scenar.js";
-var executed = JSON.parse(fs.readFileSync(fileName, 'utf8'));
-
-
-var toPlay = [];
-
-executed.forEach(sc => {
-    if (sc.actions.find(ac => ac.errors && ac.errors > 0)) toPlay.push(sc);
-});
-
-console.log(`${toPlay.length} scenario to play (only play scenario with errors`);
-
-var scenarioManager = new ScenarioManager(100);
-toPlay.forEach(sc => {
-	var new_scenario = new Scenario(sc.actions);
-    scenarioManager.addScenarioToExecute(new_scenario);
-});
-
-
-play(err, success);
-
-function err(e) {
-	console.log(e);
-
-}
-
-function success() {
-	console.log(checkReplay());
-}
-
-
-function play(errcallback, okcallback) {
-    if (scenarioManager.hasScenarioToExecute()) {
-        executeNextScenario(
-            () => play(errcallback, okcallback),
-            () => play(errcallback, okcallback));
-    } else {
-        nightmare.end()
-            .then(res => {
-                okcallback(res);
+    registerListener() {
+        this.nightmare.on('console', (type, args) => {
+                if (type === 'error') {
+                    this.html_error.push(args)
+                }
             })
-            .catch(err => {
-                errcallback(err);
+            .on('page', (type, message, stack) => {
+                if (type === 'error') {
+                    this.html_error.push(message);
+                }
+            })
+            .on('did-get-response-details', (event, status, newURL, originalURL, code, referrer, headers, resourceType) => {
+                const HTML_ERROR_CODE = 400;
+                if (code >= HTML_ERROR_CODE) {
+                    this.response_error.push(code);
+                }
             });
     }
-}
 
-
-function executeNextScenario(errcallback, okcallback) {
-    var scenario = scenarioManager.nextScenarioToExecute();
-    console.log("executed a new scenario");
-    if (scenario) {
-        executeScenario(scenario,
-            () => {
-                errcallback();
-            },
-            () => {
-                okcallback();
-            });
-    } else {
-        okcallback();
+    start(errcallback, okcallback) {
+        this.play(errcallback, okcallback);
     }
-}
 
-
-function executeScenario(scenario, errcallback, okcallback) {
-    if (scenario.hasNext()) {
-        var next_action = scenario.next();
-        next_action.attachTo(nightmare)
-            .wait(1000)
-            .then((res) => {
-            	console.log(`${next_action} is executed`);
-            	next_action.executed = true;
-            	markError(next_action);
-            	cleanError();
-            	executeScenario(scenario, errcallback, okcallback);
-            })
-            .catch((err) => {
-            	console.log(`${next_action} is not executed (scenario aborded)`);
-            	next_action.executed = false;
-            	markError(next_action);
-            	cleanError();
-                errcallback()
-            })
-    } else {
-        okcallback();
+    play(errcallback, okcallback) {
+        if (this.scenarioManager.hasScenarioToExecute()) {
+            this.executeNextScenario(
+                () => this.play(errcallback, okcallback),
+                () => this.play(errcallback, okcallback));
+        } else {
+            this.nightmare.end()
+                .then(res => {
+                    okcallback(this.scenarioManager.executed);
+                })
+                .catch(err => {
+                    errcallback(err);
+                });
+        }
     }
+
+
+    executeNextScenario(errcallback, okcallback) {
+        var scenario = this.scenarioManager.nextScenarioToExecute();
+        console.log("executed a new scenario");
+        if (scenario) {
+            this.executeScenario(scenario,
+                () => {
+                    errcallback();
+                },
+                () => {
+                    okcallback();
+                });
+        } else {
+            okcallback();
+        }
+    }
+
+
+    executeScenario(scenario, errcallback, okcallback) {
+        if (scenario.hasNext()) {
+            var next_action = scenario.next();
+            next_action.attachTo(this.nightmare)
+                .wait(1000)
+                .then((res) => {
+                    console.log(`${next_action} is executed`);
+                    next_action.executed = true;
+                    this.markError(next_action);
+                    this.cleanError();
+                    this.executeScenario(scenario, errcallback, okcallback);
+                })
+                .catch((err) => {
+                    console.log(`${next_action} is not executed (scenario aborded)`);
+                    next_action.executed = false;
+                    this.markError(next_action);
+                    this.cleanError();
+                    errcallback()
+                })
+        } else {
+            okcallback();
+        }
+    }
+
+    markError(ent) {
+        ent.errors = ent.errors || [];
+        this.response_error.forEach((err) => ent.errors.push(err));
+        this.html_error.forEach((err) => ent.errors.push(err));
+    }
+
+    cleanError() {
+        this.response_error = [];
+        this.html_error = [];
+    }
+
 }
 
-function markError(ent) {
-    ent.errors = ent.errors || [];
-    response_error.forEach((err) => ent.errors.push(err));
-    html_error.forEach((err) => ent.errors.push(err));
-}
 
-function cleanError() {
-    response_error = [];
-    html_error = [];
-}
 
-function checkReplay() {
+module.exports.Player = Player;
+
+
+
+
+
+/*function checkReplay() {
     var numberOfSameScenario = 0;
     if (toPlay.length !== scenarioManager.executed.length) return false;
 
     for (var i = 0; i < toPlay.length; i++) {
-    	var originalScenario = toPlay[i];
-    	var replayScenario = scenarioManager.executed[i];
-    	if (originalScenario.actions.length !== replayScenario.actions.length) return false;
+        var originalScenario = toPlay[i];
+        var replayScenario = scenarioManager.executed[i];
+        if (originalScenario.actions.length !== replayScenario.actions.length) return false;
 
-    	for (var j = 0; j < originalScenario.actions.length; j++) {
-    		var originalAction = originalScenario.actions[j];
-    		var replayAction = replayScenario.actions[j];
-    		if (originalAction.executed !== replayAction.executed) return false;
-    		if ((originalAction.errors.length > 0) && (replayAction.errors.length === 0)) return false;
+        for (var j = 0; j < originalScenario.actions.length; j++) {
+            var originalAction = originalScenario.actions[j];
+            var replayAction = replayScenario.actions[j];
+            if (originalAction.executed !== replayAction.executed) return false;
+            if ((originalAction.errors.length > 0) && (replayAction.errors.length === 0)) return false;
             if ((originalAction.errors.length === 0) && (replayAction.errors.length > 0)) return false;
-    	}
+        }
     }
     return true;
 }
+
+
+
+
+
+*/

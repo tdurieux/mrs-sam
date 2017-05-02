@@ -22,6 +22,24 @@ function err(msg) {
 function success(result) {
     saveExecutedScenario(result.executedScenario);
     if (options.map.active) saveSiteMap(result.siteMap);
+    if (options.replay.active) {
+        var Player = require('./player.js').Player;
+        var toPlay = [];
+        result.executedScenario.forEach(sc => {
+            if (sc.actions.find(ac => ac.errors.length > 0)) toPlay.push(sc);
+        });
+        console.log(`${toPlay.length} scenario with error will be replayed`);
+        var player = new Player(url, toPlay);
+        player.start(err => console.log(err), (executed) => {
+            executed.forEach(sc => {
+                if (sc.actions.find(ac => ac.errors.length > 0)) {
+                    console.log('error replayed');
+                } else {
+                    console.log('error cannot be replayed');
+                }
+            })
+        });
+    }
 }
 
 function saveExecutedScenario(executed) {

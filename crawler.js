@@ -62,12 +62,12 @@ class Crawler {
             .on('did-get-response-details', (event, status, newURL, originalURL, code, referrer, headers, resourceType) => {
                 const HTML_ERROR_CODE = 400;
                 if (code >= HTML_ERROR_CODE) {
-                    winston.error(`An error HTTP has been received (code: ${code}, url:${newURL})`);
+                    //winston.error(`An error HTTP has been received (code: ${code}, url:${newURL})`);
                     this.response_error.push(code);
                 }
             });
 
-        winston.info(`EventListerners have been initialized and setted !`);
+        //winston.info(`EventListerners have been initialized and setted !`);
     }
 
     preCrawl(errcallback, okcallback) {
@@ -133,7 +133,7 @@ class Crawler {
         var scenario = scenarioManager.nextScenarioToExecute();
 
         if (scenario) {
-            winston.info(`Proceed: ${scenario}\n`);
+            //winston.info(`Proceed: ${scenario}\n`);
             this.executeScenario(scenario,
                 () => {
                     errcallback();
@@ -156,7 +156,7 @@ class Crawler {
                 .wait(this.options.crawler.wait)
                 .evaluate(htmlAnalysis)
                 .then(analysis_result => {
-                    winston.info(`An action has been executed and after the HTML has been analyzed`);
+                    //winston.info(`An action has been executed and after the HTML has been analyzed`);
                     this.handleEndOfAction(next_action, analysis_result);
                     if (!scenario.hasNext()) {
                         this.scenarioGenerator.generateNewScenari(scenario, analysis_result).forEach(sc => this.scenarioManager.addScenarioToExecute(sc));
@@ -164,7 +164,7 @@ class Crawler {
                     this.executeScenario(scenario, errcallback, okcallback)
                 })
                 .catch((err) => {
-                    winston.error(`An action (${next_action}) cannot be executed (error: ${err}), the scenario is aborded.`);
+                    //winston.error(`An action (${next_action}) cannot be executed (error: ${err}), the scenario is aborded.`);
                     next_action.executed = false;
                     errcallback()
                 })

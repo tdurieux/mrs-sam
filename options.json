@@ -1,7 +1,7 @@
 {
     "crawler": {
-        "maxsteps": 5,
-        "time": 20,
+        "maxsteps": 4,
+        "time": 2,
         "wait": 1000,
         "show": true
     },
@@ -19,7 +19,7 @@
             "selectors": ["a", "div", "img"]
         },
         "scroll": {
-            "active": false,
+            "active": true,
             "scroll_x": 2000,
             "scroll_y": 4000
         },
@@ -37,5 +37,9 @@
         "back": {
             "active": true
         }
+    },
+    "replay": {
+        "active" : true,
+        "check" : true
     }
 }
