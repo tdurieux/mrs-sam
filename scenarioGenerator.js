@@ -25,7 +25,7 @@ class ScenarioGenerator {
         var initScenario = new Scenario();
         initScenario.addAction(new GotoAction(this.url));
         //initScenario.addAction(new WaitAction(this.options.crawler.wait));
-        winston.info(`An initial scenario has been created and registered to the ScenarioManager.`);
+        //winston.info(`An initial scenario has been created and registered to the ScenarioManager.`);
         return initScenario;
     }
 
@@ -55,7 +55,7 @@ class ScenarioGenerator {
     }
 
     generateClickScenari(orginalScenario, htmlEvaluation) {
-        winston.info(`${htmlEvaluation.selectors.length} selectors have been extracted and transformed into new scenario`);
+        //winston.info(`${htmlEvaluation.selectors.length} selectors have been extracted and transformed into new scenario`);
         var scenari = [];
         for (var i = 0; i < htmlEvaluation.selectors.length; i++) {
             var new_scenario = orginalScenario.duplicate();
@@ -68,7 +68,7 @@ class ScenarioGenerator {
     }
 
     generateFormScenari(orginalScenario, htmlEvaluation) {
-        winston.info(`${htmlEvaluation.forms.length} forms have been extracted and transformed into new scenario`);
+        //winston.info(`${htmlEvaluation.forms.length} forms have been extracted and transformed into new scenario`);
         var scenari = [];
         for (var i = 0; i < htmlEvaluation.forms.length; i++) {
             scenari.push(this.generateFormScenario(orginalScenario, htmlEvaluation.forms[i]));

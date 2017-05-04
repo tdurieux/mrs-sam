@@ -64,7 +64,6 @@ class Player {
 
     executeNextScenario(errcallback, okcallback) {
         var scenario = this.scenarioManager.nextScenarioToExecute();
-        console.log("executed a new scenario");
         if (scenario) {
             this.executeScenario(scenario,
                 () => {
@@ -85,14 +84,12 @@ class Player {
             next_action.attachTo(this.nightmare)
                 .wait(1000)
                 .then((res) => {
-                    console.log(`${next_action} is executed`);
                     next_action.executed = true;
                     this.markError(next_action);
                     this.cleanError();
                     this.executeScenario(scenario, errcallback, okcallback);
                 })
                 .catch((err) => {
-                    console.log(`${next_action} is not executed (scenario aborded)`);
                     next_action.executed = false;
                     this.markError(next_action);
                     this.cleanError();

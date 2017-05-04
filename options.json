@@ -1,7 +1,7 @@
 {
     "crawler": {
-        "maxsteps": 4,
-        "time": 2,
+        "maxsteps": 10,
+        "time": 3,
         "wait": 1000,
         "show": true
     },

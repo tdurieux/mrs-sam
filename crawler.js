@@ -133,7 +133,7 @@ class Crawler {
         var scenario = scenarioManager.nextScenarioToExecute();
 
         if (scenario) {
-            //winston.info(`Proceed: ${scenario}\n`);
+            winston.info(`Proceed: ${scenario}\n`);
             this.executeScenario(scenario,
                 () => {
                     errcallback();
