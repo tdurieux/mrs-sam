@@ -9,6 +9,8 @@ If you want to crawl our test server, perform `npm install` in `server/test` as 
 
 ## Usage
 
+To run a 3 minute random crawl of an URL:
+
     node index.js --options=[string] --url=[string] --out=[string]
 
 
