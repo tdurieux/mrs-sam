@@ -2,7 +2,7 @@ var sce = require('./scenario.js');
 var ScenarioManager = sce.ScenarioManager;
 var Scenario = sce.Scenario;
 
-var Nightmare = require('Nightmare');
+var Nightmare = require('nightmare');
 
 class Player {
     constructor(url, scenari) {
