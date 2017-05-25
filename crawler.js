@@ -10,7 +10,7 @@ var startTime = present();
 var htmlAnalysis = require('./htmlAnalysis.js');
 
 
-var ScenarioManager = require('./scenario.js').ScenarioManager;
+var ScenarioManager = require('./scenarioManager.js').ScenarioManager;
 var ScenarioGenerator = require('./scenarioGenerator.js').ScenarioGenerator;
 var SiteMap = require('./siteMap.js').SiteMap;
 

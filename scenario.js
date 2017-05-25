@@ -5,6 +5,10 @@ class Action {
     toString() {
         return `${this.constructor.name}`;
     }
+
+    equalsTo(action) {
+        return this.type !== action.type;
+    }
 }
 
 class GotoAction extends Action {
@@ -20,6 +24,10 @@ class GotoAction extends Action {
     toString() {
         return `${super.toString()}: ${this.url}`;
     }
+
+    equalsTo(action) {
+        return (super.equalsTo(action) && (this.url === action.url));
+    }
 }
 
 
@@ -31,6 +39,10 @@ class SelectorAction extends Action {
 
     toString() {
         return `${super.toString()}: ${this.selector}`;
+    }
+
+    equalsTo(action) {
+        return (super.equalsTo(action) && (this.selector === action.selector));
     }
 }
 
@@ -70,6 +82,10 @@ class TypeAction extends Action {
     toString() {
         return `${super.toString()}: ${this.selector}, ${this.text}`;
     }
+
+    equalsTo(action) {
+        return (super.equalsTo(action) && (this.selector === action.selector) && (this.text === action.text));
+    }
 }
 
 
@@ -87,6 +103,10 @@ class ScrollToAction extends Action {
     toString() {
         return `${super.toString()}: ${this.x}, ${this.y}`;
     }
+
+    equalsTo(action) {
+        return (super.equalsTo(action) && (this.x === action.x) && (this.y === action.y));
+    }
 }
 
 
@@ -102,6 +122,10 @@ class WaitAction extends Action {
 
     toString() {
         return `${super.toString()}: ${this.ms}ms`;
+    }
+
+    equalsTo(action) {
+        return (super.equalsTo(action) && (this.ms === action.ms));
     }
 }
 
@@ -184,42 +208,22 @@ class Scenario {
         this.actions.forEach(ac => dupication.addAction(ac));
         return dupication;
     }
-}
 
-
-class ScenarioManager {
-    constructor(maxsteps) {
-        this.executed = [];
-        this.toexecute = [];
-        this.maxsteps = maxsteps;
-    }
-
-    addScenarioToExecute(scenario) {
-        if (scenario.level <= this.maxsteps) this.toexecute.push(scenario);
-    }
-
-    nextScenarioToExecute() {
-        var id = Math.floor(Math.random() * this.toexecute.length);
-        var scenario = this.toexecute[id];
-        this.toexecute.splice(this.toexecute.indexOf(scenario), 1);
-        this.executed.push(scenario);
-        return scenario;
-    }
-
-    hasScenarioToExecute() {
-        return this.toexecute.length > 0;
-    }
-
-    numberOfScenarioToExecute() {
-        return this.toexecute.length;
-    }
-
-    numberOfExecutedScenario() {
-        return this.executed.length;
+    equalsTo(scenario) {
+        if (this.actions.length === scenario.actions.length) {
+            for (var i = 0; i < this.actions.length; i++) {
+                if (! this.actions[i].equalsTo(scenario.actions[i])) {
+                    return false;
+                }
+            }
+            return true;
+        } else {
+            return false;
+        }
     }
 }
 
-module.exports.ScenarioManager = ScenarioManager;
+
 module.exports.Scenario = Scenario;
 module.exports.GotoAction = GotoAction;
 module.exports.ClickAction = ClickAction;
