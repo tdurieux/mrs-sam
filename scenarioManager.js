@@ -1,36 +1,53 @@
+var HashMap = require('hashmap');
 class ScenarioManager {
-    constructor(maxsteps) {
+    constructor(maxSteps, maxRuns) {
         this.executed = [];
-        this.toexecute = [];
-        this.maxsteps = maxsteps;
+        this.toExecute = [];
+        this.scenariosByLevel = new HashMap();
+        this.maxSteps = maxSteps;
+        this.maxRuns = maxRuns;
     }
 
     addScenarioToExecute(scenario) {
-        if (scenario.level <= this.maxsteps) this.toexecute.push(scenario);
+        if (scenario.level <= this.maxSteps) {
+            if (!this.toExecute.includes(scenario)) {
+                scenario.run = 0;
+                this.toExecute.push(scenario);
+                if (! this.scenariosByLevel.has(scenario.level)) {
+                    this.scenariosByLevel.set(scenario.level,[]);
+                }
+                this.scenariosByLevel.get(scenario.level).push(scenario);
+            } 
+        }
     }
 
     nextScenarioToExecute() {
-        var id = Math.floor(Math.random() * this.toexecute.length);
-        var scenario = this.toexecute[id];
-        this.toexecute.splice(this.toexecute.indexOf(scenario), 1);
-        this.executed.push(scenario);
+        var randomLevel = this.scenariosByLevel.keys()[Math.floor(Math.random() * this.scenariosByLevel.keys().length)];
+        var scenarioOfRandomLevel = this.scenariosByLevel.get(randomLevel);
+        var candidateScenarios = scenarioOfRandomLevel.filter( s => s.run < this.maxRuns);
+        var scenario = candidateScenarios[Math.floor(Math.random() * candidateScenarios.length)];
+        if (!scenario) scenario = this.toExecute[0];
+        if (! this.executed.includes(scenario)) {
+            this.executed.push(scenario);
+        }
+        scenario.run++;
         return scenario;
     }
 
     hasScenarioToExecute() {
-        return this.toexecute.length > 0;
+        return this.toExecute.length > 0;
     }
 
     numberOfScenarioToExecute() {
-        return this.toexecute.length;
+        return this.toExecute.length;
     }
 
     numberOfExecutedScenario() {
         return this.executed.length;
     }
 
-    ownsScenario(scenario) {
-        
+    getNumberOfRuns(scenarios) {
+
     }
 }
 

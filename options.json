@@ -1,7 +1,8 @@
 {
     "crawler": {
         "maxsteps": 10,
-        "time": 60,
+        "maxruns": 5,
+        "time": 10,
         "wait": 1000,
         "show": true
     },
@@ -39,7 +40,7 @@
         }
     },
     "replay": {
-        "active" : true,
-        "check" : true
+        "active" : false,
+        "check" : false
     }
 }

@@ -1,6 +1,7 @@
 var sce = require('./scenario.js');
-var ScenarioManager = sce.ScenarioManager;
+var scm = require('./scenarioManager.js');
 var Scenario = sce.Scenario;
+var ScenarioManager = scm.ScenarioManager;
 
 var Nightmare = require('nightmare');
 

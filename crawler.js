@@ -20,7 +20,7 @@ class Crawler {
     constructor(url, options) {
         this.url = url;
         this.options = options;
-        this.scenarioManager = new ScenarioManager(this.options.crawler.maxsteps);
+        this.scenarioManager = new ScenarioManager(this.options.crawler.maxsteps, this.options.crawler.maxruns);
         this.scenarioGenerator = new ScenarioGenerator(this.url, this.options);
 
         var initial_scenario = this.scenarioGenerator.generateInitialScenario();
@@ -71,6 +71,7 @@ class Crawler {
     }
 
     preCrawl(errcallback, okcallback) {
+        //Comment this if the crawler needs a specific preCrawl scenario
         okcallback();
 
         //Uncomment this if the crawler needs a specific preCrawl scenario (i.e. Facebook Login)
@@ -114,7 +115,7 @@ class Crawler {
                     var result = {
                         duration: endTime - startTime,
                         executedScenario: this.scenarioManager.executed,
-                        numberOfUnexecutedScenario: this.scenarioManager.toexecute.length
+                        numberOfUnexecutedScenario: this.scenarioManager.executed.filter(s => s.run > 0).length
                     };
                     if (this.siteMap) result.siteMap = this.siteMap;
                     okcallback(result);
