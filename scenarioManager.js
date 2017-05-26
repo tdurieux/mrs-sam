@@ -10,7 +10,7 @@ class ScenarioManager {
 
     addScenarioToExecute(scenario) {
         if (scenario.level <= this.maxSteps) {
-            if (!this.toExecute.includes(scenario)) {
+            if (!this.toExecute.find(s => scenario.equalsTo(s))) {
                 scenario.run = 0;
                 this.toExecute.push(scenario);
                 if (! this.scenariosByLevel.has(scenario.level)) {
@@ -27,7 +27,7 @@ class ScenarioManager {
         var candidateScenarios = scenarioOfRandomLevel.filter( s => s.run < this.maxRuns);
         var scenario = candidateScenarios[Math.floor(Math.random() * candidateScenarios.length)];
         if (!scenario) scenario = this.toExecute[0];
-        if (! this.executed.includes(scenario)) {
+        if (! this.executed.find(s => scenario.equalsTo(s))) {
             this.executed.push(scenario);
         }
         scenario.run++;
