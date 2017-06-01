@@ -3,7 +3,6 @@ var winston = require('winston');
 
 //monitoring
 var present = require('present');
-var startTime = present();
 
 
 //Import of other modules (this should be improved somehow)
@@ -34,6 +33,7 @@ class Crawler {
 
 
     start(errcallback, okcallback) {
+        this.startTime = present();
         this.nightmare = Nightmare({ show: this.options.crawler.show });
         winston.info(`Nightmare has been initialized !`);
 
@@ -94,7 +94,7 @@ class Crawler {
     crawl(errcallback, okcallback) {
         var scenarioManager = this.scenarioManager;
         var nightmare = this.nightmare;
-        var hasTime = (present() - startTime) < (this.options.crawler.time * 60 * 1000);
+        var hasTime = (present() - this.startTime) < (this.options.crawler.time * 60 * 1000);
 
         if (hasTime) {
             if (scenarioManager.hasScenarioToExecute()) {
@@ -111,9 +111,11 @@ class Crawler {
                 .then(res => {
                     winston.info(`Finished crawling`);
                     var endTime = present();
-                    winston.info(`Process duration: ${endTime - startTime} ms`);
+                    winston.info(`Process duration: ${endTime - this.startTime} ms`);
                     var result = {
-                        duration: endTime - startTime,
+                        url: this.url,
+                        options: this.options,
+                        duration: endTime - this.startTime,
                         executedScenario: this.scenarioManager.executed,
                         numberOfUnexecutedScenario: this.scenarioManager.executed.filter(s => s.run > 0).length
                     };

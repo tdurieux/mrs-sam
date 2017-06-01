@@ -4,7 +4,7 @@
         "maxruns": 5,
         "time": 10,
         "wait": 1000,
-        "show": true
+        "show": false
     },
     "map": {
         "active": true,
