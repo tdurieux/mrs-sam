@@ -43,11 +43,16 @@
                     </div>
                 </div>
                 <div class="inner cover" ng-controller="resultsController">
-                    <h1 class="cover-heading">Results</h1>
-                    <ul>
-                        <li ng-repeat="result in results">Result : {{result.url}}
-                        </li>
-                    </ul>
+                    <h1 class="cover-heading">All Results</h1>
+                    <div class="row">
+                        <div class="col-sm-12" ng-repeat="aResult in results">
+                            Result : {{aResult.url}}
+                            <button ng-click="showResult(aResult)"> Details </button>
+                        </div>
+                    </div>
+                    <div ng-show="show">
+                      <result></result>
+                    </div>
                 </div>
                 <div class="mastfoot">
                     <div class="inner">

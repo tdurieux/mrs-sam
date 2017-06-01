@@ -25,9 +25,27 @@
 
     function resultControllerFactory($scope, resultsService) {
         $scope.results = resultsService.get(); 
+        $scope.show = false;
+        $scope.result = {};
 
+        $scope.showResult = function(result) {
+            //alert(JSON.stringify(result));
+            resultsService.query({id:result._id}, function (resultFromBD) {
+                alert(JSON.stringify(resultFromBD));
+                $scope.result = resultFromBD[0];
+                $scope.show = true;
+            });
+        }
     }
 
+    angular.module('resultsApp').directive('result', resultFactory);
+
+    function resultFactory() {
+        return {
+            restrict: 'E',
+            templateUrl: 'template/result.html'
+        };
+    };
 
 
 })();

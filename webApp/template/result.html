@@ -1,0 +1,57 @@
+<h1>Details</h1>
+<h2>General Options</h2>
+<div class="row">
+	<div class="col-sm-2">URL</div>
+	<div class="col-sm-10">{{result.url}}</div>
+</div>
+<div class="row">
+	<div class="col-sm-2">MaxSteps</div>
+	<div class="col-sm-10">{{result.options.crawler.maxsteps}}</div>
+</div>
+<div class="row">
+	<div class="col-sm-2">MaxRuns</div>
+	<div class="col-sm-10">{{result.options.crawler.maxruns}}</div>
+</div>
+<div class="row">
+	<div class="col-sm-2">Time</div>
+	<div class="col-sm-10">{{result.options.crawler.time}}</div>
+</div>
+<div class="row">
+	<div class="col-sm-2">Wait</div>
+	<div class="col-sm-10">{{result.options.crawler.wait}}</div>
+</div>
+
+<h2>ScenarioGenerator Options</h2>
+<div class="row">
+	<div class="col-sm-2">ClickAction</div>
+	<div class="col-sm-10">{{result.options.scenario.click.active}}</div>
+</div>
+<div class="row">
+	<div class="col-sm-2">ScrollAction</div>
+	<div class="col-sm-10">{{result.options.scenario.scroll.active}}</div>
+</div>
+<div class="row">
+	<div class="col-sm-2">FormAction</div>
+	<div class="col-sm-10">{{result.options.scenario.form.active}}</div>
+</div>
+<div class="row">
+	<div class="col-sm-2">BackAction</div>
+	<div class="col-sm-10">{{result.options.scenario.back.active}}</div>
+</div>
+<div class="row">
+	<div class="col-sm-2">MouseOverAction</div>
+	<div class="col-sm-10">{{result.options.scenario.mouseover.active}}</div>
+</div>
+<div class="row">
+	<div class="col-sm-2">WaitAction</div>
+	<div class="col-sm-10">{{result.options.scenario.wait.active}}</div>
+</div>
+
+
+
+
+<h2>Executed Scenario</h2>
+<div ng-repeat="scenario in result.executedScenario" class="row">
+	<h3>Scenario</h3>
+	<span title="action." ng-repeat="action in scenario.actions">{{action.type}} </span>
+</div>
