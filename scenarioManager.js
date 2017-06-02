@@ -10,7 +10,7 @@ class ScenarioManager {
 
     addScenarioToExecute(scenario) {
         if (scenario.level <= this.maxSteps) {
-            if (!this.toExecute.find(s => scenario.equalsTo(s))) {
+            if (this.toExecute.find(s => {return scenario.equalsTo(s)}) === undefined) {
                 scenario.run = 0;
                 this.toExecute.push(scenario);
                 if (! this.scenariosByLevel.has(scenario.level)) {

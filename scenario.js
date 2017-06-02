@@ -7,7 +7,7 @@ class Action {
     }
 
     equalsTo(action) {
-        return this.type !== action.type;
+        return this.type === action.type;
     }
 }
 

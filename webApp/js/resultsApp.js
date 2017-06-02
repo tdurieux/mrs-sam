@@ -31,7 +31,7 @@
         $scope.showResult = function(result) {
             //alert(JSON.stringify(result));
             resultsService.query({id:result._id}, function (resultFromBD) {
-                alert(JSON.stringify(resultFromBD));
+                //alert(JSON.stringify(resultFromBD));
                 $scope.result = resultFromBD[0];
                 $scope.show = true;
             });

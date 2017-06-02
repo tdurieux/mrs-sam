@@ -53,5 +53,7 @@
 <h2>Executed Scenario</h2>
 <div ng-repeat="scenario in result.executedScenario" class="row">
 	<h3>Scenario</h3>
-	<span title="action." ng-repeat="action in scenario.actions">{{action.type}} </span>
+	<h4>Info</h4>
+	<h4>Actions</h4>
+	<span ng-repeat="action in scenario.actions">{{action.type}} </span>
 </div>
