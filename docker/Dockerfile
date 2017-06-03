@@ -1,10 +1,10 @@
 FROM alpine:3.6
 MAINTAINER Xavier Blanc <blancxav@gmail.com>
 
-RUN apk update && apk add nodejs && apk add git
-
-RUN mkdir mrs-sam
-WORKDIR mrs-sam
+RUN apk update \
+	&& apk add nodejs \
+	&& apk add nodejs-npm \
+	&& apk add git 
 
 ADD run.sh .
 

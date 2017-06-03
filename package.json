@@ -24,6 +24,7 @@
   "homepage": "https://github.com/xblanc33/mrs-sam#readme",
   "dependencies": {
     "body-parser": "^1.17.2",
+    "bower": "^1.8.0",
     "diff": "^3.2.0",
     "express": "^4.15.3",
     "hashmap": "^2.1.0",
