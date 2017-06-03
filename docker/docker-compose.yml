@@ -1,0 +1,8 @@
+version: '2'
+services:
+  mongo: 
+    image: "mongo:3.0"
+  web:
+    build: .
+    ports: 
+      - "8080:8080"
