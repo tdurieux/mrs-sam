@@ -27,7 +27,7 @@ module.exports = function() {
         var selectors = new Array();
         var a_links = document.getElementsByTagName('a');
         for (var i = 0; i < a_links.length; i++) {
-            if (!isMailTo(a_links[i])) selectors.push(computeSelector(a_links[i]));
+            if (!isMailTo(a_links[i]) && !isPdfFile(a_links[i])) selectors.push(computeSelector(a_links[i]));
         }
 
         var img_links = document.getElementsByTagName('img');
@@ -74,6 +74,10 @@ module.exports = function() {
 
     function isMailTo(a_link) {
         return a_link.href.includes('mailto');
+    }
+
+    function isPdfFile(a_link) {
+        return a_link.href.endsWith('.pdf');
     }
 }
 

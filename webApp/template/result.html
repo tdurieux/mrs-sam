@@ -1,5 +1,5 @@
-<h1>Details</h1>
-<h2>General Options</h2>
+<h3>Details</h3>
+<h4>General Options</h4>
 <div class="row">
 	<div class="col-sm-2">URL</div>
 	<div class="col-sm-10">{{result.url}}</div>
@@ -21,7 +21,7 @@
 	<div class="col-sm-10">{{result.options.crawler.wait}}</div>
 </div>
 
-<h2>ScenarioGenerator Options</h2>
+<h4>ScenarioGenerator Options</h4>
 <div class="row">
 	<div class="col-sm-2">ClickAction</div>
 	<div class="col-sm-10">{{result.options.scenario.click.active}}</div>
@@ -48,15 +48,24 @@
 </div>
 
 
+<h3>Statisitcs</h3>
 
 
-<h2>Executed Scenario</h2>
-<div ng-repeat="scenario in result.executedScenario" class="row">
-	<h3>Scenario</h3>
-	<h4>Info</h4>
-	Runs: {{scenario.run}}
-	<h4>Actions</h4>
-	<span title="{{action.selector}}" ng-repeat="action in scenario.actions">
-	{{action.type}} <span title="{{action.errors}}">[{{action.errors.length}} error(s)]</span>
-	</span>
+
+<h3>Executed Scenario</h3>
+<div class="row">
+	<div class="col-sm-2">Runs</div>
+	<div class="col-sm-5">Actions</div>
+	<div class="col-sm-5">Errors</div>
 </div>
+<div ng-repeat="scenario in result.executedScenario" class="row">
+	<div class="col-sm-2">{{scenario.run}}</div>
+	<div class="col-sm-5">
+	<span title="{{action.selector}}" ng-repeat="action in scenario.actions">
+	{{action.type}}</span>
+	</div>
+	<div class="col-sm-5">
+		<span title="{{action.selector}}" ng-repeat="action in scenario.actions"><span title="{{action.errors}}">[{{action.errors.length}} error(s)]</span></span>
+	</div>
+</div>
+

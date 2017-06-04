@@ -22,11 +22,16 @@ class ScenarioManager {
     }
 
     nextScenarioToExecute() {
-        var randomLevel = this.scenariosByLevel.keys()[Math.floor(Math.random() * this.scenariosByLevel.keys().length)];
+        /*var randomLevel = this.scenariosByLevel.keys()[Math.floor(Math.random() * this.scenariosByLevel.keys().length)];
         var scenarioOfRandomLevel = this.scenariosByLevel.get(randomLevel);
         var candidateScenarios = scenarioOfRandomLevel.filter( s => s.run < this.maxRuns);
         var scenario = candidateScenarios[Math.floor(Math.random() * candidateScenarios.length)];
         if (!scenario) scenario = this.toExecute[0];
+        if (! this.executed.find(s => scenario.equalsTo(s))) {
+            this.executed.push(scenario);
+        }*/
+        var scenario = this.toExecute.shift();
+        this.toExecute.push(scenario);
         if (! this.executed.find(s => scenario.equalsTo(s))) {
             this.executed.push(scenario);
         }
