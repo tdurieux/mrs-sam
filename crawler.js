@@ -46,24 +46,23 @@ class Crawler {
     }
 
     registerEventListener() {
-        this.response_error = [];
-        this.html_error = [];
+        this.errors = [];
 
         this.nightmare.on('console', (type, args) => {
                 if (type === 'error') {
-                    this.html_error.push(args)
+                    this.errors.push({type:'console',value:type+' '+args});
                 }
             })
             .on('page', (type, message, stack) => {
                 if (type === 'error') {
-                    this.html_error.push(message);
+                    this.errors.push({type:'page', value:type+' '+message});
                 }
             })
             .on('did-get-response-details', (event, status, newURL, originalURL, code, referrer, headers, resourceType) => {
                 const HTML_ERROR_CODE = 400;
                 if (code >= HTML_ERROR_CODE) {
                     //winston.error(`An error HTTP has been received (code: ${code}, url:${newURL})`);
-                    this.response_error.push(code);
+                    this.errors.push({type:'http', value:status+' '+code+' '+newURL});
                 }
             });
 
@@ -117,13 +116,14 @@ class Crawler {
                         options: this.options,
                         duration: endTime - this.startTime,
                         executedScenario: this.scenarioManager.executed,
-                        numberOfUnexecutedScenario: this.scenarioManager.executed.filter(s => s.run > 0).length
+                        numberOfUnexecutedScenario: this.scenarioManager.executed.filter(s => s.run === 0).length
                     };
                     if (this.siteMap) result.siteMap = this.siteMap;
                     okcallback(result);
                 })
                 .catch(err => {
                     winston.error(`Error finishing crawling: ${err}`);
+                    this.errors.push({type:'crawler',value:err});
                     errcallback(err);
                 });
         }
@@ -168,6 +168,7 @@ class Crawler {
                 })
                 .catch((err) => {
                     //winston.error(`An action (${next_action}) cannot be executed (error: ${err}), the scenario is aborded.`);
+                    this.errors.push({type:'crawler',value:err});
                     next_action.executed = false;
                     errcallback()
                 })
@@ -193,13 +194,11 @@ class Crawler {
 
     markError(ent) {
         ent.errors = ent.errors || [];
-        this.response_error.forEach((err) => ent.errors.push(err));
-        this.html_error.forEach((err) => ent.errors.push(err));
+        this.errors.forEach((err) => ent.errors.push(err));
     }
 
     cleanError() {
-        this.response_error = [];
-        this.html_error = [];
+        this.errors = [];
     }
 
 }

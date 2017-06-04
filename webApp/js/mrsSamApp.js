@@ -26,11 +26,11 @@
 
     function testControllerFactory($scope, $http) {
         $scope.options = {
-            URL: "http://localhost:8080",
+            URL: "http://www.amazon.com",
             crawler: {
-                maxsteps: 10,
+                maxsteps: 5,
                 maxruns: 5,
-                time: 20,
+                time: 2,
                 wait: 1000
             },
             scenario: {
@@ -57,6 +57,7 @@
         $scope.results = resultsService.get();
         $scope.show = false;
         $scope.result = {};
+        $scope.statistics = {};
 
         $scope.showResult = function(result) {
             //alert(JSON.stringify(result));
@@ -64,7 +65,39 @@
                 //alert(JSON.stringify(resultFromBD));
                 $scope.result = resultFromBD[0];
                 $scope.show = true;
+
+                computeStatistics();
+
+                alert(JSON.stringify($scope.statistics));
+
             });
+
+            function computeStatistics() {
+                alert(JSON.stringify($scope.result))
+                $scope.statistics.duration = $scope.result.duration;
+                $scope.statistics.numberOfExecuterScenario = $scope.result.executedScenario.length;
+                $scope.statistics.numberOfUnexecutedScenario = $scope.result.numberOfUnexecutedScenario;
+                $scope.statistics.consoleErrors = 0;
+                $scope.statistics.pageErrors = 0;
+                $scope.statistics.httpErrors = 0;
+                $scope.statistics.crawlerErrors = 0;
+                $scope.result.executedScenario.forEach(scenario => {
+                    scenario.actions.forEach(action => {
+                        action.errors.forEach(error => {
+                            switch (error.type) {
+                                case 'console' :  $scope.statistics.consoleErrors++;
+                                                    break;
+                                case 'page' : $scope.statistics.pageErrors++;
+                                                    break;
+                                case 'http' : $scope.statistics.httpErrors++;
+                                                    break;
+                                case 'crawler' : $scope.statistics.crawlerErrors++;
+                            } 
+                        })
+                    })
+                })
+                alert(JSON.stringify($scope.statistics));          
+            }
         }
     }
 
