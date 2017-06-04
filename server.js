@@ -2,7 +2,7 @@ var express = require('express');
 var path = require('path');
 var bodyParser = require('body-parser');
 var application_root = __dirname;
-var db_url = 'mongodb://mongo:27017/mrssam';
+var db_url = 'mongodb://localhost:27017/mrssam';
 
 
 var mong_client = require('mongodb').MongoClient;
