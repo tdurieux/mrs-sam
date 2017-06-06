@@ -18,12 +18,15 @@ class ScenarioGenerator {
     constructor(url, options) {
         this.url = url;
         this.options = options;
+        this.id = 0;
     }
 
 
     generateInitialScenario() {
         var initScenario = new Scenario();
         initScenario.addAction(new GotoAction(this.url));
+        initScenario.id = this.id;
+        this.id++;
         //initScenario.addAction(new WaitAction(this.options.crawler.wait));
         //winston.info(`An initial scenario has been created and registered to the ScenarioManager.`);
         return initScenario;
@@ -61,6 +64,8 @@ class ScenarioGenerator {
             var new_scenario = orginalScenario.duplicate();
             var action = new ClickAction(htmlEvaluation.selectors[i]);
             new_scenario.addAction(action);
+            new_scenario.id = this.id;
+            this.id++;
             //new_scenario.addAction(new WaitAction(this.options.crawler.wait));
             scenari.push(new_scenario);
         }
@@ -110,6 +115,8 @@ class ScenarioGenerator {
         //click_actions.forEach((action) => new_scenario.addAction(action));
         if (click_actions.length > 0) new_scenario.addAction(click_actions[0]);
         //new_scenario.addAction(new WaitAction(this.options.crawler.wait));
+        new_scenario.id = this.id;
+        this.id++;
         return new_scenario;
     }
 
@@ -118,6 +125,8 @@ class ScenarioGenerator {
         var action = new ScrollToAction(this.options.scenario.scroll.scroll_x, this.options.scenario.scroll.scroll_y);
         new_scenario.addAction(action);
         //new_scenario.addAction(new WaitAction(this.options.crawler.wait));
+        new_scenario.id = this.id;
+        this.id++;
         return new_scenario;
     }
 
@@ -127,6 +136,8 @@ class ScenarioGenerator {
             var new_scenario = orginalScenario.duplicate();
             var action = new MouseOverAction(htmlEvaluation.selectors[i]);
             new_scenario.addAction(action);
+            new_scenario.id = this.id;
+            this.id++;
             //new_scenario.addAction(new WaitAction(this.options.crawler.wait));
             scenari.push(new_scenario);
         }
@@ -137,6 +148,8 @@ class ScenarioGenerator {
         var new_scenario = orginalScenario.duplicate();
         var action = new WaitAction(this.options.scenario.wait.wait);
         new_scenario.addAction(action);
+        new_scenario.id = this.id;
+        this.id++;
         //new_scenario.addAction(new WaitAction(this.options.crawler.wait));
         return new_scenario;
     }
@@ -145,6 +158,8 @@ class ScenarioGenerator {
         var new_scenario = orginalScenario.duplicate();
         var action = new BackAction();
         new_scenario.addAction(action);
+        new_scenario.id = this.id;
+        this.id++;
         //new_scenario.addAction(new WaitAction(this.options.crawler.wait));
         return new_scenario;
     }

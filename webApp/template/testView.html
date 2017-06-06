@@ -2,47 +2,47 @@
 <h4>Mrs Sam Options</h4>
 <div class="row">
     <div class="col-sm-2">URL</div>
-    <div class="col-sm-10">{{result.url}}</div>
+    <div class="col-sm-10">{{test.options.URL}}</div>
 </div>
 <div class="row">
     <div class="col-sm-2">MaxSteps</div>
-    <div class="col-sm-10">{{result.options.crawler.maxsteps}}</div>
+    <div class="col-sm-10">{{test.options.crawler.maxsteps}}</div>
 </div>
 <div class="row">
     <div class="col-sm-2">MaxRuns</div>
-    <div class="col-sm-10">{{result.options.crawler.maxruns}}</div>
+    <div class="col-sm-10">{{test.options.crawler.maxruns}}</div>
 </div>
 <div class="row">
     <div class="col-sm-2">Time</div>
-    <div class="col-sm-10">{{result.options.crawler.time}}</div>
+    <div class="col-sm-10">{{test.options.crawler.time}}</div>
 </div>
 <div class="row">
     <div class="col-sm-2">Wait</div>
-    <div class="col-sm-10">{{result.options.crawler.wait}}</div>
+    <div class="col-sm-10">{{test.options.crawler.wait}}</div>
 </div>
 <div class="row">
     <div class="col-sm-2">ClickAction</div>
-    <div class="col-sm-10">{{result.options.scenario.click.active}}</div>
+    <div class="col-sm-10">{{test.options.scenario.click.active}}</div>
 </div>
 <div class="row">
     <div class="col-sm-2">ScrollAction</div>
-    <div class="col-sm-10">{{result.options.scenario.scroll.active}}</div>
+    <div class="col-sm-10">{{test.options.scenario.scroll.active}}</div>
 </div>
 <div class="row">
     <div class="col-sm-2">FormAction</div>
-    <div class="col-sm-10">{{result.options.scenario.form.active}}</div>
+    <div class="col-sm-10">{{test.options.scenario.form.active}}</div>
 </div>
 <div class="row">
     <div class="col-sm-2">BackAction</div>
-    <div class="col-sm-10">{{result.options.scenario.back.active}}</div>
+    <div class="col-sm-10">{{test.options.scenario.back.active}}</div>
 </div>
 <div class="row">
     <div class="col-sm-2">MouseOverAction</div>
-    <div class="col-sm-10">{{result.options.scenario.mouseover.active}}</div>
+    <div class="col-sm-10">{{test.options.scenario.mouseover.active}}</div>
 </div>
 <div class="row">
     <div class="col-sm-2">WaitAction</div>
-    <div class="col-sm-10">{{result.options.scenario.wait.active}}</div>
+    <div class="col-sm-10">{{test.options.scenario.wait.active}}</div>
 </div>
 <h3>Statistics</h3>
 <div class="row">
@@ -50,12 +50,8 @@
     <div class="col-sm-10">{{statistics.duration}} ms</div>
 </div>
 <div class="row">
-    <div class="col-sm-2">Number of executed scenario</div>
+    <div class="col-sm-2">Number of scenario</div>
     <div class="col-sm-10">{{statistics.numberOfExecuterScenario}}</div>
-</div>
-<div class="row">
-    <div class="col-sm-2">Number of unexecuted scenario</div>
-    <div class="col-sm-10">{{statistics.numberOfUnexecutedScenario}}</div>
 </div>
 <div class="row">
     <div class="col-sm-2">Number of Console Error</div>
@@ -80,7 +76,7 @@
     <div class="col-sm-5">Actions</div>
     <div class="col-sm-5">Errors</div>
 </div>
-<div ng-repeat="scenario in result.executedScenario" class="row">
+<div ng-repeat="scenario in executedScenario" class="row">
     <div class="col-sm-2">{{scenario.run}}</div>
     <div class="col-sm-5">
         <span title="{{action.selector}}" ng-repeat="action in scenario.actions">

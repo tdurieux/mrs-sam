@@ -15,12 +15,19 @@ var SiteMap = require('./siteMap.js').SiteMap;
 
 var Nightmare = require('nightmare');
 
+var CRAWLER_OK = 'CRAWLER_OK';
+var CRAWLER_ERROR = 'CRAWLER_ERROR';
+var SCENARIO_OK = 'SCENARIO_OK';
+var SCENARIO_ERROR = 'SCENARIO_ERROR';
+
 class Crawler {
     constructor(url, options) {
         this.url = url;
         this.options = options;
         this.scenarioManager = new ScenarioManager(this.options.crawler.maxsteps, this.options.crawler.maxruns);
         this.scenarioGenerator = new ScenarioGenerator(this.url, this.options);
+
+        this.progressionListeners = [];
 
         var initial_scenario = this.scenarioGenerator.generateInitialScenario();
         this.scenarioManager.addScenarioToExecute(initial_scenario);
@@ -30,6 +37,13 @@ class Crawler {
         }
     }
 
+    addProgressionListener(listener) {
+        this.progressionListeners.push(listener);
+    }
+
+    notifyAllProgressionListener(event) {
+        this.progressionListeners.forEach(listener => listener(event));
+    }
 
 
     start(errcallback, okcallback) {
@@ -50,19 +64,19 @@ class Crawler {
 
         this.nightmare.on('console', (type, args) => {
                 if (type === 'error') {
-                    this.errors.push({type:'console',value:type+' '+args});
+                    this.errors.push({ type: 'console', value: type + ' ' + args });
                 }
             })
             .on('page', (type, message, stack) => {
                 if (type === 'error') {
-                    this.errors.push({type:'page', value:type+' '+message});
+                    this.errors.push({ type: 'page', value: type + ' ' + message });
                 }
             })
             .on('did-get-response-details', (event, status, newURL, originalURL, code, referrer, headers, resourceType) => {
                 const HTML_ERROR_CODE = 400;
                 if (code >= HTML_ERROR_CODE) {
                     //winston.error(`An error HTTP has been received (code: ${code}, url:${newURL})`);
-                    this.errors.push({type:'http', value:status+' '+code+' '+newURL});
+                    this.errors.push({ type: 'http', value: status + ' ' + code + ' ' + newURL });
                 }
             });
 
@@ -119,11 +133,13 @@ class Crawler {
                         numberOfUnexecutedScenario: this.scenarioManager.executed.filter(s => s.run === 0).length
                     };
                     if (this.siteMap) result.siteMap = this.siteMap;
+                    this.notifyAllProgressionListener({ type: CRAWLER_OK, value: result });
                     okcallback(result);
                 })
                 .catch(err => {
                     winston.error(`Error finishing crawling: ${err}`);
-                    this.errors.push({type:'crawler',value:err});
+                    this.errors.push({ type: 'crawler', value: err });
+                    this.notifyAllProgressionListener({ type: CRAWLER_ERROR, value: err });
                     errcallback(err);
                 });
         }
@@ -139,9 +155,11 @@ class Crawler {
             winston.info(`Proceed: ${scenario}\n`);
             this.executeScenario(scenario,
                 () => {
+                    this.notifyAllProgressionListener({ type: SCENARIO_ERROR, value: scenario });
                     errcallback();
                 },
                 () => {
+                    this.notifyAllProgressionListener({ type: SCENARIO_OK, value: scenario });
                     okcallback();
                 });
         } else {
@@ -168,11 +186,14 @@ class Crawler {
                 })
                 .catch((err) => {
                     //winston.error(`An action (${next_action}) cannot be executed (error: ${err}), the scenario is aborded.`);
-                    this.errors.push({type:'crawler',value:err});
+                    this.errors.push({ type: 'crawler', value: err });
                     next_action.executed = false;
+                    this.markError(next_action);
+                    this.cleanError();
                     errcallback()
                 })
         } else {
+            scenario.index = 0;
             okcallback();
         }
     }

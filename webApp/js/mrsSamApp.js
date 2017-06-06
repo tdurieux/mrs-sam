@@ -3,10 +3,10 @@
 
     angular.module('mrsSamApp', ['ngResource']);
 
-    angular.module('mrsSamApp').factory('resultsService', ['$resource', resultsServiceFactory]);
+    angular.module('mrsSamApp').factory('testService', ['$resource', testServiceFactory]);
 
-    function resultsServiceFactory($resource) {
-        return $resource('./results/:id', {}, {
+    function testServiceFactory($resource) {
+        return $resource('./test/:id', {}, {
             query: {
                 method: 'GET',
                 isArray: true,
@@ -22,9 +22,9 @@
 
 
 
-    angular.module('mrsSamApp').controller('testController', ['$scope', '$http', testControllerFactory]);
+    angular.module('mrsSamApp').controller('testFormController', ['$scope', '$http', testFormControllerFactory]);
 
-    function testControllerFactory($scope, $http) {
+    function testFormControllerFactory($scope, $http) {
         $scope.options = {
             URL: "http://www.amazon.com",
             crawler: {
@@ -40,6 +40,9 @@
                 back: { active: true },
                 mouseover: { active: false },
                 wait: { active: false }
+            },
+            map: {
+                active: false
             }
         };
 
@@ -49,64 +52,65 @@
             }, function errorCallback(response) {});
         }
     }
-    
 
-    angular.module('mrsSamApp').controller('resultsController', ['$scope', 'resultsService', resultControllerFactory]);
 
-    function resultControllerFactory($scope, resultsService) {
-        $scope.results = resultsService.get();
+    angular.module('mrsSamApp').controller('testsViewController', ['$scope', 'testService', testsViewControllerFactory]);
+
+    function testsViewControllerFactory($scope, testService) {
+        $scope.tests = testService.get();
         $scope.show = false;
-        $scope.result = {};
+        $scope.test = {};
         $scope.statistics = {};
 
-        $scope.showResult = function(result) {
-            //alert(JSON.stringify(result));
-            resultsService.query({ id: result._id }, function(resultFromBD) {
-                //alert(JSON.stringify(resultFromBD));
-                $scope.result = resultFromBD[0];
+        $scope.showTest = function(test) {
+            $scope.test = test;
+            testService.query({ id: test._id }, function(resultFromBD) {
+                $scope.executedScenario = resultFromBD;
                 $scope.show = true;
-
+                
                 computeStatistics();
 
-                alert(JSON.stringify($scope.statistics));
 
             });
 
             function computeStatistics() {
-                alert(JSON.stringify($scope.result))
-                $scope.statistics.duration = $scope.result.duration;
-                $scope.statistics.numberOfExecuterScenario = $scope.result.executedScenario.length;
-                $scope.statistics.numberOfUnexecutedScenario = $scope.result.numberOfUnexecutedScenario;
+
+                $scope.statistics.duration = $scope.test.duration;
+                $scope.statistics.numberOfExecuterScenario = $scope.executedScenario.length;
                 $scope.statistics.consoleErrors = 0;
                 $scope.statistics.pageErrors = 0;
                 $scope.statistics.httpErrors = 0;
                 $scope.statistics.crawlerErrors = 0;
-                $scope.result.executedScenario.forEach(scenario => {
+
+                $scope.executedScenario.forEach(scenario => {
                     scenario.actions.forEach(action => {
                         action.errors.forEach(error => {
                             switch (error.type) {
-                                case 'console' :  $scope.statistics.consoleErrors++;
-                                                    break;
-                                case 'page' : $scope.statistics.pageErrors++;
-                                                    break;
-                                case 'http' : $scope.statistics.httpErrors++;
-                                                    break;
-                                case 'crawler' : $scope.statistics.crawlerErrors++;
-                            } 
+                                case 'console':
+                                    $scope.statistics.consoleErrors++;
+                                    break;
+                                case 'page':
+                                    $scope.statistics.pageErrors++;
+                                    break;
+                                case 'http':
+                                    $scope.statistics.httpErrors++;
+                                    break;
+                                case 'crawler':
+                                    $scope.statistics.crawlerErrors++;
+                            }
                         })
                     })
                 })
-                alert(JSON.stringify($scope.statistics));          
             }
         }
     }
 
-    angular.module('mrsSamApp').directive('result', resultFactory);
+    angular.module('mrsSamApp').directive('test', resultFactory);
 
     function resultFactory() {
         return {
             restrict: 'E',
-            templateUrl: 'template/result.html'
+            templateUrl: 'template/testView.html'
         };
     };
 

@@ -9,7 +9,7 @@ If you want to crawl our test server, perform `npm install` in `server/test` as 
 
 ## Usage
 
-To run a 3 minute random crawl of an URL:
+To run a minute random crawl of an URL:
 
     node index.js --options=[string] --url=[string] --out=[string]
 
@@ -22,4 +22,14 @@ To run a 3 minute random crawl of an URL:
 
 A graph of the website can be observed (http://localhost:8080/map.html) by running the test server !
 
+
+## Docker
+
+Mrs Sam is coming with a Docker compose installer.
+
+Go to the docker directory and run:
+
+    docker-compose up 
+
+Then you can play with Mrs Sam front-end (http://localhost:8080/map.html).
 
