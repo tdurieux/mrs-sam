@@ -28,9 +28,8 @@ app.use(function(req, res, next) {
 
 mong_client.connect(db_url, function(err, db) {
     if (err) {
-    	console.log(err);
-    }
-    else {
+        console.log(err);
+    } else {
         var fs = require('fs');
         var RouteDir = 'routes';
         var files = fs.readdirSync(RouteDir);
@@ -46,6 +45,6 @@ mong_client.connect(db_url, function(err, db) {
 
 
 
-app.listen(8080, function () {
-  console.log('Mrs Sam is listening on port 8080!');
+app.listen(8080, function() {
+    console.log('Mrs Sam is listening on port 8080!');
 });
