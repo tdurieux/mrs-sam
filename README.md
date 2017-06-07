@@ -1,4 +1,4 @@
-# Mrs-Sam Headless Crawler
+# Mrs-Sam Headless Monkey tester for web sites
 
 Mrs-Sam is a headless JS Web Site Monkey Tester that automatically tests any website to check if it contains any errors.
 
