@@ -1,29 +1,38 @@
 # Mrs-Sam Headless Crawler
 
-Mrs-Sam is a headless JS Crawler that automatically crawls any website to construction a sitemap.
+Mrs-Sam is a headless JS Web Site Monkey Tester that automatically tests any website to check if it contains any errors.
 
 ## Installation
 
 Clone the repository and perform `npm install` in the cloned folder.
-If you want to crawl our test server, perform `npm install` in `server/test` as well.
 
-## Usage
+## Usage cli (no DataBase)
 
-To run a minute random crawl of an URL:
+To run a test of web site:
 
-    node index.js --options=[string] --url=[string] --out=[string]
+    node tester.js --options=[string] --url=[string] --out=[string]
 
 
-* --options: the configuration file (default is options.js)
-* --url: the url of the website you want to crawl (ex: http://localhost:8080)
+* --options: the configuration file (see default is options.js)
+* --url: the url of the website you want to crawl (ex: http://www.amazon.fr)
 * --out: the prefix of the output file(s)
 
-## Result
 
-A graph of the website can be observed (http://localhost:8080/map.html) by running the test server !
+## Usage GUI (with DataBase)
+
+A mongodb should run (with default port 27017)
+
+To run the GUI web server:
+
+    node server.js localhost
 
 
-## Docker
+* localhost is the name of the mongodb server 
+
+Then you can play with Mrs Sam front-end (http://localhost:8080).
+
+
+## Docker GUI + MongoDB
 
 Mrs Sam is coming with a Docker compose installer.
 
@@ -31,5 +40,5 @@ Go to the docker directory and run:
 
     docker-compose up 
 
-Then you can play with Mrs Sam front-end (http://localhost:8080/map.html).
+Then you can play with Mrs Sam front-end (http://localhost:8080).
 

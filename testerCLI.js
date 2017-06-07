@@ -1,5 +1,5 @@
 var  argv  =  require('yargs')
-    .usage('$0 index.js --options=[string] --url=[string] --out=[string]').argv;
+    .usage('$0 testerCLI.js --options=[string] --url=[string] --out=[string]').argv;
 
 var fs = require('fs');
 var optionFileName = argv.options || "options.json";

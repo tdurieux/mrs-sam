@@ -31,8 +31,8 @@ class ScenarioManager {
             this.executed.push(scenario);
         }*/
         var scenario = this.toExecute.shift();
-        /*this.toExecute.push(scenario);
-        if (! this.executed.find(s => scenario.equalsTo(s))) {
+        this.executed.push(scenario);
+        /*if (! this.executed.find(s => scenario.equalsTo(s))) {
             this.executed.push(scenario);
         }*/
         scenario.run++;

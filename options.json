@@ -1,13 +1,13 @@
 {
     "crawler": {
-        "maxsteps": 10,
+        "maxsteps": 5,
         "maxruns": 5,
-        "time": 10,
+        "time": 2,
         "wait": 1000,
         "show": false
     },
     "map": {
-        "active": true,
+        "active": false,
         "state": "STRUCTURAL"
     },
     "diff": {

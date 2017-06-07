@@ -9,7 +9,7 @@ class Player {
     constructor(url, scenari) {
         this.url = url;
         this.scenari = scenari;
-        this.nightmare = Nightmare();
+        this.nightmare = Nightmare({show:true});
         this.response_error = [];
         this.html_error = [];
         
