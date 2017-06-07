@@ -85,32 +85,44 @@
 
                 $scope.executedScenario.forEach(scenario => {
                     scenario.actions.forEach(action => {
-                        action.errors.forEach(error => {
-                            switch (error.type) {
-                                case 'console':
-                                    $scope.statistics.consoleErrors++;
-                                    error.scenario = scenario;
-                                    $scope.consoleErrors.push(error);
-                                    break;
-                                case 'page':
-                                    error.scenario = scenario;
-                                    $scope.pageErrors.push(error);
-                                    $scope.statistics.pageErrors++;
-                                    break;
-                                case 'http':
-                                    error.scenario = scenario;
-                                    $scope.httpErrors.push(error);
-                                    $scope.statistics.httpErrors++;
-                                    break;
-                                case 'crawler':
-                                    error.scenario = scenario;
-                                    $scope.crawlerErrors.push(error);
-                                    $scope.statistics.crawlerErrors++;
-                            }
-                        })
+                        if (action.errors) {
+                            action.errors.forEach(error => {
+                                switch (error.type) {
+                                    case 'console':
+                                        $scope.statistics.consoleErrors++;
+                                        error.scenario_id = scenario._id;
+                                        $scope.consoleErrors.push(error);
+                                        break;
+                                    case 'page':
+                                        error.scenario_id = scenario._id;
+                                        $scope.pageErrors.push(error);
+                                        $scope.statistics.pageErrors++;
+                                        break;
+                                    case 'http':
+                                        error.scenario_id = scenario._id;
+                                        $scope.httpErrors.push(error);
+                                        $scope.statistics.httpErrors++;
+                                        break;
+                                    case 'crawler':
+                                        error.scenario_id = scenario._id;
+                                        $scope.crawlerErrors.push(error);
+                                        $scope.statistics.crawlerErrors++;
+                                }
+                            })
+                        }
                     })
-                })
+                });
             }
+        }
+
+        $scope.getScenario = function(scenario_id) {
+            return $scope.executedScenario.find(s => s._id === scenario_id)
+        }
+
+        $scope.saveScenario = function(scenario_id) {
+            var scenario = $scope.getScenario(scenario_id);
+            var blob = new Blob([JSON.stringify(scenario)], { type: "application/json" });
+            saveAs(blob, "scenario.json");
         }
     }
 
