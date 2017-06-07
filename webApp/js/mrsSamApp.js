@@ -67,14 +67,10 @@
             testService.query({ id: test._id }, function(resultFromBD) {
                 $scope.executedScenario = resultFromBD;
                 $scope.show = true;
-                
-                computeStatistics();
-
-
+                computeStatisticsAndErrors();
             });
 
-            function computeStatistics() {
-
+            function computeStatisticsAndErrors() {
                 $scope.statistics.duration = $scope.test.duration;
                 $scope.statistics.numberOfExecuterScenario = $scope.executedScenario.length;
                 $scope.statistics.consoleErrors = 0;
@@ -82,20 +78,33 @@
                 $scope.statistics.httpErrors = 0;
                 $scope.statistics.crawlerErrors = 0;
 
+                $scope.consoleErrors = [];
+                $scope.pageErrors = [];
+                $scope.httpErrors = [];
+                $scope.crawlerErrors = [];
+
                 $scope.executedScenario.forEach(scenario => {
                     scenario.actions.forEach(action => {
                         action.errors.forEach(error => {
                             switch (error.type) {
                                 case 'console':
                                     $scope.statistics.consoleErrors++;
+                                    error.scenario = scenario;
+                                    $scope.consoleErrors.push(error);
                                     break;
                                 case 'page':
+                                    error.scenario = scenario;
+                                    $scope.pageErrors.push(error);
                                     $scope.statistics.pageErrors++;
                                     break;
                                 case 'http':
+                                    error.scenario = scenario;
+                                    $scope.httpErrors.push(error);
                                     $scope.statistics.httpErrors++;
                                     break;
                                 case 'crawler':
+                                    error.scenario = scenario;
+                                    $scope.crawlerErrors.push(error);
                                     $scope.statistics.crawlerErrors++;
                             }
                         })

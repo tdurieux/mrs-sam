@@ -70,6 +70,59 @@
     <div class="col-sm-10">{{statistics.crawlerErrors}}</div>
 </div>
 
+<h3>Errors</h3>
+<h4>Console Errors</h4>
+<div class="row">
+    <div class="col-sm-7">Description</div>
+    <div class="col-sm-4">Scenario</div>
+    <div class="col-sm-1">Download</div>
+</div>
+<div ng-repeat="error in consoleErrors" class="row">
+    <div class="col-sm-7">{{error.value}}</div>
+    <div class="col-sm-4">
+        <span title="{{action.selector}}" ng-repeat="action in error.scenario.actions"><span title="{{action.errors}}">[{{action.errors.length}} error(s)]</span></span>
+    </div>
+    <div class="col-sm-1"><button ng-lick="getScenario(error.scenario)">Download</button></div>
+</div>
+<h4>Page Errors</h4>
+<div class="row">
+    <div class="col-sm-7">Description</div>
+    <div class="col-sm-4">Scenario</div>
+    <div class="col-sm-1">Download</div>
+</div>
+<div ng-repeat="error in pageErrors" class="row">
+    <div class="col-sm-7">{{error.value}}</div>
+    <div class="col-sm-4">
+        <span title="{{action.selector}}" ng-repeat="action in error.scenario.actions"><span title="{{action.errors}}">[{{action.errors.length}} error(s)]</span></span>
+    </div>
+    <div class="col-sm-1"><button ng-lick="getScenario(error.scenario)">Download</button></div>
+</div>
+<h4>HTTP Errors</h4>
+<div class="row">
+    <div class="col-sm-7">Description</div>
+    <div class="col-sm-4">Scenario</div>
+    <div class="col-sm-1">Download</div>
+</div>
+<div ng-repeat="error in httpErrors" class="row">
+    <div class="col-sm-7">{{error.value}}</div>
+    <div class="col-sm-4">
+        <span title="{{action.selector}}" ng-repeat="action in error.scenario.actions"><span title="{{action.errors}}">[{{action.errors.length}} error(s)]</span></span>
+    </div>
+    <div class="col-sm-1"><button ng-lick="getScenario(error.scenario)">Download</button></div>
+</div>
+<h4>Crawler Errors</h4>
+<div class="row">
+    <div class="col-sm-7">Description</div>
+    <div class="col-sm-4">Scenario</div>
+    <div class="col-sm-1">Download</div>
+</div>
+<div ng-repeat="error in crawlerErrors" class="row">
+    <div class="col-sm-7">{{error.value}}</div>
+    <div class="col-sm-4">
+        <span title="{{action.selector}}" ng-repeat="action in error.scenario.actions"><span title="{{action.errors}}">[{{action.errors.length}} error(s)]</span></span>
+    </div>
+    <div class="col-sm-1"><button ng-lick="getScenario(error.scenario)">Download</button></div>
+</div>
 <h3>Executed Scenario</h3>
 <div class="row">
     <div class="col-sm-2">Runs</div>
