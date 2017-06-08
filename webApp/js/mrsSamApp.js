@@ -26,7 +26,7 @@
 
     function testFormControllerFactory($scope, $http) {
         $scope.options = {
-            URL: "http://www.amazon.com",
+            URL: "http://localhost:8080/test-site",
             crawler: {
                 maxsteps: 5,
                 maxruns: 5,
@@ -35,11 +35,11 @@
             },
             scenario: {
                 click: { active: true },
-                scroll: { active: false },
+                scroll: { active: false, "scroll_x": 2000, "scroll_y": 4000 },
                 form: { active: true },
                 back: { active: true },
                 mouseover: { active: false },
-                wait: { active: false }
+                wait: { active: false, "wait": 4000 }
             },
             map: {
                 active: false

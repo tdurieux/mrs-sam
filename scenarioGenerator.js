@@ -52,7 +52,11 @@ class ScenarioGenerator {
             scenari = scenari.concat(this.generateFormScenari(orginalScenario, htmlEvaluation));
         }
         if (this.options.scenario.back.active || !is_locale) {
-            scenari = scenari.concat(this.generateBackScenari(orginalScenario));
+            if (orginalScenario.actions.length > 1) {
+                if  (orginalScenario.actions[orginalScenario.actions.length-1].type !== "BackAction") {
+                    scenari = scenari.concat(this.generateBackScenari(orginalScenario));
+                }
+            } 
         }
         return scenari;
     }
