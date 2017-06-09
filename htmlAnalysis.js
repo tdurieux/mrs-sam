@@ -5,6 +5,7 @@ module.exports = function() {
         hostname: hostname,
         hash: generateHash(),
         selectors: grabSelector(),
+        hrefs: grabHREF(),
         forms: grabForm()
     };
 
@@ -30,11 +31,26 @@ module.exports = function() {
             if (!isMailTo(a_links[i]) && !isPdfFile(a_links[i])) selectors.push(computeSelector(a_links[i]));
         }
 
-        var img_links = document.getElementsByTagName('img');
+        /*var img_links = document.getElementsByTagName('img');
         for (var i = 0; i < img_links.length; i++) {
             selectors.push(computeSelector(img_links[i]));
-        }
+        }*/
         return selectors;
+
+    }
+
+    function grabHREF() {
+        var hrefs = new Array();
+        var a_links = document.getElementsByTagName('a');
+        for (var i = 0; i < a_links.length; i++) {
+            if (a_links[i].href) hrefs.push(a_links[i].href);
+        }
+
+        /*var img_links = document.getElementsByTagName('img');
+        for (var i = 0; i < img_links.length; i++) {
+            selectors.push(computeSelector(img_links[i]));
+        }*/
+        return hrefs;
 
     }
 

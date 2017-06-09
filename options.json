@@ -16,8 +16,7 @@
     },
     "scenario": {
         "click": {
-            "active": true,
-            "selectors": ["a", "div", "img"]
+            "active": true
         },
         "scroll": {
             "active": true,
@@ -29,8 +28,7 @@
             "wait": 4000
         },
         "mouseover": {
-            "active": false,
-            "selectors": ["a", "div", "img"]
+            "active": false
         },
         "form": {
             "active": true
