@@ -1,15 +1,23 @@
 var amqp = require('amqplib/callback_api');
 var URI = require('urijs');
+var mong_client = require('mongodb').MongoClient;
+var ObjectID = require('mongodb').ObjectID;
+
 
 class URLChecker {
-    constructor(base) {
+    constructor(fetch_id, base, rabbitMQServer, mongoServer) {
+        this.fetch_id = fetch_id;
         this.baseURI = new URI(base)
-        this.consumingQ = 'URLToCheck';
-        this.producingQ = 'PageToTest';
+        this.consumingQ = `URLToCheck${fetch_id}`;
+        this.producingQ = `PageToTest${fetch_id}`;
+        this.rmq_url = `amqp://${rabbitMQServer}`;
+        this.db_url = `mongodb://${mongoServer}:27017/mrssam`;
+        this.ch = undefined;
+        this.db = undefined;
     }
 
     start() {
-        amqp.connect('amqp://localhost', (err, conn) => {
+        amqp.connect(this.rmq_url, (err, conn) => {
             if (err) {
                 console.log(err)
             } else {
@@ -17,36 +25,53 @@ class URLChecker {
                     if (err) {
                         console.log(err);
                     } else {
-                    	this.ch = ch;
+                        this.ch = ch;
                         this.ch.assertQueue(this.consumingQ, { durable: false });
-                        this.consume(ch, this.consumingQ);
+                        this.ch.assertQueue(this.producingQ, { durable: false });
+                        mong_client.connect(this.db_url, (err, db) => {
+                            if (err) {
+                                console.log(err);
+                            } else {
+                                this.db = db;
+                                this.consume();
+                            }
+                        });
                     }
                 });
             }
         });
     }
 
-    consume(ch, queue) {
-    	console.log("URLChecker is running!");
-        ch.consume(queue, msg => {
-        	var url = msg.content.toString();
+    consume() {
+        console.log("URLChecker is running!");
+        this.ch.consume(this.consumingQ, msg => {
+            var url = msg.content.toString();
+            console.log(`URLChecker is consuming ${url}`);
             try {
                 var uri = new URI(url);
-                this.produce(uri.absoluteTo(this.baseURI).toString());
-
+                if (uri.hostname() === this.baseURI.hostname()) {
+                    this.produce(uri.absoluteTo(this.baseURI).toString());
+                }
             } catch (e) {
-
+                console.log(e);
             }
         }, { noAck: false });
     }
 
     produce(checkedURL) {
-    	console.log(`produce ${checkedURL}`)
-    	this.ch.assertQueue(this.producingQ, { durable: false });
-    	this.ch.sendToQueue(this.producingQ, new Buffer(checkedURL), {persistent: false});
+        this.db.collection('TestedPage', (err, pageColl) => {
+            pageColl.findOne({ url: checkedURL, fetch_id: this.fetch_id }, (err, pageToTest) => {
+                if (!err && !pageToTest) {
+                    console.log(`URLChecker is producing ${checkedURL}`);
+                    this.ch.sendToQueue(this.producingQ, new Buffer(checkedURL), { persistent: false });
+                } else {
+                    console.log(`URLChecker founds exiting ${JSON.stringify(pageToTest)}`);
+                }
+            })
+
+        });
 
     }
 }
 
-var urc = new URLChecker('http://www.amazon.fr');
-urc.start();
+module.exports.URLChecker = URLChecker;

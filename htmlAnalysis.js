@@ -10,7 +10,7 @@ module.exports = function() {
     };
 
     function generateHash() {
-        return generateStructuralDOMHash(document.body);
+        return document.body;
     }
 
     function generateStructuralDOMHash(element) {
