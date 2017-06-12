@@ -1,6 +1,7 @@
 var  argv  =  require('yargs')
-    .usage('$0 urlFetcherCLI.js --url=[string] --rmq=[string] --mg=[string]').argv;
+    .usage('$0 urlFetcherCLI.js --url=[string] --maxTime=[string] --rmq=[string] --mg=[string]').argv;
 var url = argv.url || 'http://localhost:8080/test-site';
+var maxTime = argv.maxTime || 60000;
 var rmq = argv.rmq || 'localhost';
 var mg = argv.mg || 'localhost';
 
@@ -11,6 +12,7 @@ var db_url = `mongodb://${mg}:27017/mrssam`;
 
 var URLChecker = require('./URLChecker').URLChecker;
 var PageTester = require('./PageTester').PageTester;
+
 
 
 mong_client.connect(db_url, (err, db) => {
@@ -32,8 +34,11 @@ function startWorkers(fetch_id, url, rmq, mg) {
     var urlChecker = new URLChecker(fetch_id, url, rmq, mg);
     urlChecker.start();
 
-    var pageTester = new PageTester(fetch_id, url, rmq, mg);
-    pageTester.start();
+    for (var i = 0; i < 3; i++) {
+        var pageTester = new PageTester(fetch_id, url, rmq, mg);
+        pageTester.start();
+    }
+
 }
 
 

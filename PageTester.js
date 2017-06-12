@@ -5,6 +5,7 @@ var htmlAnalysis = require('./htmlAnalysis.js');
 var mong_client = require('mongodb').MongoClient;
 var ObjectID = require('mongodb').ObjectID;
 
+
 class PageTester {
     constructor(fetch_id, base, rabbitMQServer, mongoServer) {
         this.fetch_id = fetch_id;
@@ -15,7 +16,7 @@ class PageTester {
         this.db_url = `mongodb://${mongoServer}:27017/mrssam`;
         this.ch = undefined;
         this.db = undefined;
-        //this.nightmare = new Nightmare({ show: true });
+        this.nightmare = new Nightmare({ show: false });
     }
 
     start() {
@@ -60,20 +61,20 @@ class PageTester {
     handleMsg(msgOrFalse) {
         if (msgOrFalse && msgOrFalse !== false) {
             var url = msgOrFalse.content.toString();
-            console.log(`Page Tester is consuming ${JSON.stringify(url)}`);
+            //console.log(`Page Tester is consuming ${JSON.stringify(url)}`);
 
 
             this.db.collection('TestedPage', (err, pageColl) => {
                 pageColl.findOne({ url: url, fetch_id: this.fetch_id }, (err, recoredPage) => {
                     if (err || !recoredPage) {
                         var oid = ObjectID();
-                        var screenShotPath = "img/"+oid + ".png";
-                        var nightmare = new Nightmare({ show: true });
-                        nightmare.goto(url)
+                        var screenShotPath = "img/" + oid + ".png";
+                        //var nightmare = new Nightmare({ show: true });
+                        this.nightmare.goto(url)
                             .wait(2000)
                             .screenshot(screenShotPath)
                             .evaluate(htmlAnalysis)
-                            .end()
+                            //.end()
                             .then(analysisResult => {
                                 var testedPage = {
                                     _id: oid,
@@ -88,7 +89,6 @@ class PageTester {
                                     );
                                 });
                                 pageColl.save(testedPage, null, (err, savePage) => {
-                                    console.log(JSON.stringify(testedPage));
                                     this.getMsg();
                                 });
                             })
