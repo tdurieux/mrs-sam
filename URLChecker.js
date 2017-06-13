@@ -46,7 +46,7 @@ class URLChecker {
         console.log("URLChecker is running!");
         this.ch.consume(this.consumingQ, msg => {
             var url = msg.content.toString();
-            //console.log(`URLChecker is consuming ${url}`);
+            console.log(`URLChecker is consuming ${url}`);
             try {
                 var uri = new URI(url);
                 if (uri.hostname() === this.baseURI.hostname()) {
@@ -62,7 +62,7 @@ class URLChecker {
         this.db.collection('TestedPage', (err, pageColl) => {
             pageColl.findOne({ url: checkedURL, fetch_id: this.fetch_id }, (err, pageToTest) => {
                 if (!err && !pageToTest) {
-                    //console.log(`URLChecker is producing ${checkedURL}`);
+                    console.log(`URLChecker is producing ${checkedURL}`);
                     this.ch.sendToQueue(this.producingQ, new Buffer(checkedURL), { persistent: false });
                 } else {
                     //console.log(`URLChecker founds exiting ${JSON.stringify(pageToTest)}`);

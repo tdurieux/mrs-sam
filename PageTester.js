@@ -16,7 +16,7 @@ class PageTester {
         this.db_url = `mongodb://${mongoServer}:27017/mrssam`;
         this.ch = undefined;
         this.db = undefined;
-        this.nightmare = new Nightmare({ show: false });
+        //this.nightmare = new Nightmare({ show: true });
     }
 
     start() {
@@ -61,21 +61,29 @@ class PageTester {
     handleMsg(msgOrFalse) {
         if (msgOrFalse && msgOrFalse !== false) {
             var url = msgOrFalse.content.toString();
-            //console.log(`Page Tester is consuming ${JSON.stringify(url)}`);
+            console.log(`Page Tester is consuming ${JSON.stringify(url)}`);
 
 
             this.db.collection('TestedPage', (err, pageColl) => {
                 pageColl.findOne({ url: url, fetch_id: this.fetch_id }, (err, recoredPage) => {
                     if (err || !recoredPage) {
                         var oid = ObjectID();
-                        var screenShotPath = "img/" + oid + ".png";
-                        //var nightmare = new Nightmare({ show: true });
-                        this.nightmare.goto(url)
+                        var screenShotPath = "img/" + this.fetch_id + "/" + oid + ".png";
+                        var nightmare = new Nightmare({ show: true });
+                        //this.
+                        nightmare.goto(url)
                             .wait(2000)
                             .screenshot(screenShotPath)
                             .evaluate(htmlAnalysis)
-                            //.end()
+                            .end()
                             .then(analysisResult => {
+                                analysisResult.hrefs.forEach(href => {
+                                    if (!isMailTo(href) && !isPdfFile(href)) {
+                                        this.ch.sendToQueue(this.producingQ,
+                                            new Buffer(href), { persistent: false }
+                                        );
+                                    }
+                                });
                                 var testedPage = {
                                     _id: oid,
                                     url: url,
@@ -83,11 +91,6 @@ class PageTester {
                                     hrefs: analysisResult.hrefs,
                                     body: analysisResult.hash
                                 }
-                                analysisResult.hrefs.forEach(href => {
-                                    this.ch.sendToQueue(this.producingQ,
-                                        new Buffer(href), { persistent: false }
-                                    );
-                                });
                                 pageColl.save(testedPage, null, (err, savePage) => {
                                     this.getMsg();
                                 });
@@ -107,6 +110,15 @@ class PageTester {
             setTimeout(() => {
                 this.getMsg();
             }, 2000);
+        }
+
+
+        function isMailTo(href) {
+            return href.includes('mailto');
+        }
+
+        function isPdfFile(href) {
+            return href.endsWith('.pdf');
         }
     }
 

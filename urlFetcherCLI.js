@@ -6,6 +6,8 @@ var rmq = argv.rmq || 'localhost';
 var mg = argv.mg || 'localhost';
 
 
+var fs = require('fs');
+
 var mong_client = require('mongodb').MongoClient;
 var ObjectID = require('mongodb').ObjectID;
 var db_url = `mongodb://${mg}:27017/mrssam`;
@@ -18,6 +20,7 @@ var PageTester = require('./PageTester').PageTester;
 mong_client.connect(db_url, (err, db) => {
     db.collection('Fetch', (err, fetchColl) => {
         var fetch_id = ObjectID();
+        fs.mkdirSync(`img/${fetch_id}`);
         fetchColl.insertOne({ _id: fetch_id, url: url }, (err, res) => {
             if (!err) {
                 startWorkers(fetch_id, url, rmq, mg);
