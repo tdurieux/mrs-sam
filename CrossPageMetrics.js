@@ -1,11 +1,13 @@
 var mong_client = require('mongodb').MongoClient;
+var fs = require('fs');
 
 class CrossPageMetrics {
-    constructor(mongoServer) {
+    constructor(mongoServer, csvPath) {
         this.db_url = `mongodb://${mongoServer}:27017/mrssam`;
         this.cpm = new CrossPageMatrix();
         this.cocitations = undefined;
         this.couplings = undefined;
+        this.csvPath = csvPath;
     }
 
     start() {
@@ -62,14 +64,57 @@ class CrossPageMetrics {
     computeMetrics() {
         this.cocitations = new Matrix2D(this.cpm.size());
         this.couplings = new Matrix2D(this.cpm.size());
+        this.similarity = new Matrix2D(this.cpm.size());
+
 
         for (var i = 0; i < this.cpm.size(); i++) {
             for (var j = 0; j < this.cpm.size(); j++) {
-                this.cocitations.set(i, j, this.cpm.getCoCitation(this.cpm.entries[i], this.cpm.entries[j]));
-                this.couplings.set(i, j, this.cpm.getCoupling(this.cpm.entries[i], this.cpm.entries[j]));
+                if (this.cocitations.get(i, i) == 0) {
+                    this.cocitations.set(i, i, this.cpm.getCoCitation(this.cpm.entries[i], this.cpm.entries[i]));
+                }
+                if (this.cocitations.get(j, j) == 0) {
+                    this.cocitations.set(j, j, this.cpm.getCoCitation(this.cpm.entries[j], this.cpm.entries[j]));
+                }
+                if (this.cocitations.get(i, j) == 0) {
+                    this.cocitations.set(i, j, this.cpm.getCoCitation(this.cpm.entries[i], this.cpm.entries[j]));
+                }
+
+                if (this.couplings.get(i, i) == 0) {
+                    this.couplings.set(i, i, this.cpm.getCoupling(this.cpm.entries[i], this.cpm.entries[i]));
+                }
+                if (this.couplings.get(j, j) == 0) {
+                    this.couplings.set(j, j, this.cpm.getCoupling(this.cpm.entries[j], this.cpm.entries[j]));
+                }
+                if (this.couplings.get(i, j) == 0) {
+                    this.couplings.set(i, j, this.cpm.getCoupling(this.cpm.entries[i], this.cpm.entries[j]));
+                }
+
+                var cii = this.cocitations.get(i, i);
+                var cjj = this.cocitations.get(j, j);
+                var cij = this.cocitations.get(i, j);
+                var bii = this.couplings.get(i, i);
+                var bjj = this.couplings.get(j, j);
+                var bij = this.couplings.get(i, j);
+
+                var sim = (cij / Math.sqrt(cii * cjj)) + (bij / Math.sqrt(bii * bjj));
+                if (isNaN(sim)) {
+                	sim=0;
+                }
+                this.similarity.set(i, j, sim);
+
             }
         }
         console.log("metrics are computed");
+        if (this.csvPath) {
+        	this.saveMetricsInCSV(this.csvPath);
+        }
+    }
+
+    saveMetricsInCSV(filePath) {
+        var csv = this.similarity.matrix.map(row => {
+            return row.join(',')
+        }).join('\r\n');
+        fs.writeFile(filePath, csv)
     }
 }
 
