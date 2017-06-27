@@ -1,8 +1,10 @@
 var mong_client = require('mongodb').MongoClient;
+var ObjectID = require('mongodb').ObjectID;
 var fs = require('fs');
 
 class CrossPageMetrics {
-    constructor(mongoServer, csvPath) {
+    constructor(fetchID, mongoServer, csvPath) {
+    	this.fetchID = ObjectID(fetchID);
         this.db_url = `mongodb://${mongoServer}:27017/mrssam`;
         this.cpm = new CrossPageMatrix();
         this.cocitations = undefined;
@@ -24,10 +26,10 @@ class CrossPageMetrics {
 
     fetchEntries() {
         this.db.collection('TestedPage', (err, pageColl) => {
-            var cursor = pageColl.find().each((err, page) => {
+            var cursor = pageColl.find({fetch_id:this.fetchID}).each((err, page) => {
                 if (page) {
                     console.log("ADD ENTRY: " + page.url);
-                    this.cpm.addEntry(page.url);
+                    this.cpm.addEntry(page._id, page.url);
                 } else {
                     console.log("ENTRIES ARE FETCHED !!!!!!")
                     this.fetchReferences();
@@ -40,7 +42,7 @@ class CrossPageMetrics {
     fetchReferences() {
         this.cpm.initMatrix();
         this.db.collection('TestedPage', (err, pageColl) => {
-            var cursor = pageColl.find().each((err, page) => {
+            var cursor = pageColl.find({fetch_id:this.fetchID}).each((err, page) => {
                 if (page) {
                     page.hrefs.forEach(href => {
                         try {
@@ -107,6 +109,7 @@ class CrossPageMetrics {
         console.log("metrics are computed");
         if (this.csvPath) {
         	this.saveMetricsInCSV(this.csvPath);
+        	this.saveOIDInCSV(this.csvPath)
         }
     }
 
@@ -114,7 +117,14 @@ class CrossPageMetrics {
         var csv = this.similarity.matrix.map(row => {
             return row.join(',')
         }).join('\r\n');
-        fs.writeFile(filePath, csv)
+        var csvFile = filePath+"_data.csv";
+        fs.writeFile(csvFile, csv);
+    }
+
+    saveOIDInCSV(filePath) {
+    	var ids = this.cpm.ids.join(',') + '\r\n';
+    	var csvFile = filePath+"_ids.csv";
+        fs.writeFile(csvFile, ids);
     }
 }
 
@@ -122,15 +132,17 @@ class CrossPageMetrics {
 class CrossPageMatrix {
     constructor() {
         this.entries = [];
+        this.ids = [];
     }
 
     size() {
         return this.entries.length;
     }
 
-    addEntry(url) {
+    addEntry(id, url) {
         if (this.entries.indexOf(url) === -1) {
             this.entries.push(url);
+            this.ids.push(id);
         }
     }
 

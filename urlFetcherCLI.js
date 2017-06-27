@@ -4,6 +4,7 @@ var url = argv.url || 'http://localhost:8080/test-site';
 var maxTime = argv.maxTime || 60000;
 var rmq = argv.rmq || 'localhost';
 var mg = argv.mg || 'localhost';
+var show = false;
 
 
 var fs = require('fs');
@@ -38,7 +39,7 @@ function startWorkers(fetch_id, url, rmq, mg) {
     urlChecker.start();
 
     for (var i = 0; i < 3; i++) {
-        var pageTester = new PageTester(fetch_id, url, rmq, mg);
+        var pageTester = new PageTester(fetch_id, url, rmq, mg, show);
         pageTester.start();
     }
 

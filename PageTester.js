@@ -7,13 +7,14 @@ var ObjectID = require('mongodb').ObjectID;
 
 
 class PageTester {
-    constructor(fetch_id, base, rabbitMQServer, mongoServer) {
+    constructor(fetch_id, base, rabbitMQServer, mongoServer, show) {
         this.fetch_id = fetch_id;
         this.baseURI = new URI(base)
         this.consumingQ = `PageToTest${fetch_id}`;
         this.producingQ = `URLToCheck${fetch_id}`;
         this.rmq_url = `amqp://${rabbitMQServer}`;
         this.db_url = `mongodb://${mongoServer}:27017/mrssam`;
+        this.show = show;
         this.ch = undefined;
         this.db = undefined;
         //this.nightmare = new Nightmare({ show: true });
@@ -69,7 +70,7 @@ class PageTester {
                     if (err || !recoredPage) {
                         var oid = ObjectID();
                         var screenShotPath = "img/" + this.fetch_id + "/" + oid + ".png";
-                        var nightmare = new Nightmare({ show: true });
+                        var nightmare = new Nightmare({ show: this.show });
                         //this.
                         nightmare.goto(url)
                             .wait(2000)
