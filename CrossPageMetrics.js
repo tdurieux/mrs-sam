@@ -1,15 +1,19 @@
 var mong_client = require('mongodb').MongoClient;
 var ObjectID = require('mongodb').ObjectID;
 var fs = require('fs');
+var Simhash = require('./simhash').Simhash;
+var similarity = require('./simhash').similarity;
 
 class CrossPageMetrics {
     constructor(fetchID, mongoServer, csvPath) {
-    	this.fetchID = ObjectID(fetchID);
+        this.fetchID = ObjectID(fetchID);
         this.db_url = `mongodb://${mongoServer}:27017/mrssam`;
         this.cpm = new CrossPageMatrix();
         this.cocitations = undefined;
         this.couplings = undefined;
         this.csvPath = csvPath;
+        this.pageSimHash = [];
+        this.simhash = new Simhash();
     }
 
     start() {
@@ -26,8 +30,9 @@ class CrossPageMetrics {
 
     fetchEntries() {
         this.db.collection('TestedPage', (err, pageColl) => {
-            var cursor = pageColl.find({fetch_id:this.fetchID}).each((err, page) => {
+            var cursor = pageColl.find({ fetch_id: this.fetchID }).each((err, page) => {
                 if (page) {
+                    this.pageSimHash.push(this.simhash.of(page.body, { kshingles: 2, maxFeatures: 32 }));
                     console.log("ADD ENTRY: " + page.url);
                     this.cpm.addEntry(page._id, page.url);
                 } else {
@@ -42,7 +47,7 @@ class CrossPageMetrics {
     fetchReferences() {
         this.cpm.initMatrix();
         this.db.collection('TestedPage', (err, pageColl) => {
-            var cursor = pageColl.find({fetch_id:this.fetchID}).each((err, page) => {
+            var cursor = pageColl.find({ fetch_id: this.fetchID }).each((err, page) => {
                 if (page) {
                     page.hrefs.forEach(href => {
                         try {
@@ -98,18 +103,22 @@ class CrossPageMetrics {
                 var bjj = this.couplings.get(j, j);
                 var bij = this.couplings.get(i, j);
 
-                var sim = (cij / Math.sqrt(cii * cjj)) + (bij / Math.sqrt(bii * bjj));
-                if (isNaN(sim)) {
-                	sim=0;
+                var simg = (cij / Math.sqrt(cii * cjj)) + (bij / Math.sqrt(bii * bjj));
+                if (isNaN(simg)) {
+                    simg = 0;
                 }
-                this.similarity.set(i, j, sim);
+
+                var sims = similarity(this.pageSimHash[i], this.pageSimHash[j])
+                this.similarity.set(i, j, simg + sims);
+                //this.similarity.set(i, j, sims);
 
             }
         }
         console.log("metrics are computed");
         if (this.csvPath) {
-        	this.saveMetricsInCSV(this.csvPath);
-        	this.saveOIDInCSV(this.csvPath)
+            this.saveMetricsInCSV(this.csvPath);
+            this.saveOIDInCSV(this.csvPath);
+            this.saveReferencesInCSV(this.csvPath);
         }
     }
 
@@ -117,14 +126,19 @@ class CrossPageMetrics {
         var csv = this.similarity.matrix.map(row => {
             return row.join(',')
         }).join('\r\n');
-        var csvFile = filePath+"_data.csv";
+        var csvFile = filePath + "_data.csv";
         fs.writeFile(csvFile, csv);
     }
 
     saveOIDInCSV(filePath) {
-    	var ids = this.cpm.ids.join(',') + '\r\n';
-    	var csvFile = filePath+"_ids.csv";
+        var ids = this.cpm.ids.join(',') + '\r\n';
+        var csvFile = filePath + "_ids.csv";
         fs.writeFile(csvFile, ids);
+    }
+
+    saveReferencesInCSV(filePath) {
+        var csvFile = filePath + "_ref.csv";
+        this.cpm.refMatrix.saveCSV(csvFile);
     }
 }
 
@@ -236,6 +250,14 @@ class Matrix2D {
             result.push(this.matrix[i][y]);
         }
         return result;
+    }
+
+    saveCSV(filePath) {
+        var csv = this.matrix.map(row => {
+            return row.join(',');
+        }).join('\r\n');
+        fs.writeFile(filePath, csv);
+
     }
 }
 
