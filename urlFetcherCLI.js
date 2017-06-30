@@ -1,9 +1,10 @@
 var  argv  =  require('yargs')
-    .usage('$0 urlFetcherCLI.js --url=[string] --maxTime=[string] --rmq=[string] --mg=[string]').argv;
+    .usage('$0 urlFetcherCLI.js --url=[string] --maxTime=[string] --rmq=[string] --mg=[string] --oid=[string]').argv;
 var url = argv.url || 'http://localhost:8080/test-site';
 var maxTime = argv.maxTime || 60000;
 var rmq = argv.rmq || 'localhost';
 var mg = argv.mg || 'localhost';
+var oid = argv.oid ? argv.oid : undefined;
 var show = false;
 
 
@@ -21,6 +22,10 @@ var PageTester = require('./PageTester').PageTester;
 mong_client.connect(db_url, (err, db) => {
     db.collection('Fetch', (err, fetchColl) => {
         var fetch_id = ObjectID();
+        if (oid) {
+            fetch_id = ObjectID(oid);
+        }
+        
         fs.mkdirSync(`img/${fetch_id}`);
         fetchColl.insertOne({ _id: fetch_id, url: url }, (err, res) => {
             if (!err) {
