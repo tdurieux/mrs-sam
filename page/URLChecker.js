@@ -11,7 +11,7 @@ class URLChecker {
         this.consumingQ = `URLToCheck${fetch_id}`;
         this.producingQ = `PageToTest${fetch_id}`;
         this.rmq_url = `amqp://${rabbitMQServer}`;
-        this.db_url = `mongodb://${mongoServer}:27017/mrssam`;
+        this.db_url = `mongodb://${mongoServer}:27017/fetcher`;
         this.ch = undefined;
         this.db = undefined;
     }
@@ -44,26 +44,36 @@ class URLChecker {
 
     consume() {
         console.log("URLChecker is running!");
-        this.ch.consume(this.consumingQ, msg => {
-            var url = msg.content.toString();
-            console.log(`URLChecker is consuming ${url}`);
-            try {
-                var uri = new URI(url);
-                if (uri.hostname() === this.baseURI.hostname()) {
-                    this.produce(uri.absoluteTo(this.baseURI).toString());
+        this.ch.consume(
+            this.consumingQ, msg => {
+                var msgContent = JSON.parse(msg.content.toString());
+                var url = msgContent.url;
+                var from = msgContent.from;
+                var site = msgContent.site;
+                console.log(`URLChecker is consuming ${url}`);
+                try {
+                    var uri = new URI(url);
+                    if (uri.hostname() === this.baseURI.hostname()) {
+                        this.produce(uri.absoluteTo(this.baseURI).toString(), from, site);
+                    }
+                } catch (e) {
+                    console.log(e);
                 }
-            } catch (e) {
-                console.log(e);
-            }
-        }, { noAck: false });
+            }, { noAck: false }
+        );
     }
 
-    produce(checkedURL) {
-        this.db.collection('TestedPage', (err, pageColl) => {
-            pageColl.findOne({ url: checkedURL, fetch_id: this.fetch_id }, (err, pageToTest) => {
+    produce(url, from, site) {
+        this.db.collection(`Pages_${this.fetch_id}`, (err, pageColl) => {
+            pageColl.findOne({ url: url, fetch_id: this.fetch_id }, (err, pageToTest) => {
                 if (!err && !pageToTest) {
-                    console.log(`URLChecker is producing ${checkedURL}`);
-                    this.ch.sendToQueue(this.producingQ, new Buffer(checkedURL), { persistent: false });
+                    console.log(`URLChecker is producing ${url}`);
+                    var msg = {
+                        url: url,
+                        from: from,
+                        site: site
+                    };
+                    this.ch.sendToQueue(this.producingQ, new Buffer(JSON.stringify(msg)), { persistent: false });
                 } else {
                     //console.log(`URLChecker founds exiting ${JSON.stringify(pageToTest)}`);
                 }

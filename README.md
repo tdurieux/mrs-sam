@@ -1,44 +1,21 @@
-# Mrs-Sam Headless Monkey tester for web sites
+# Mrs-Sam a set of tools to crawl web sites
 
-Mrs-Sam is a headless JS Web Site Monkey Tester that automatically tests any website to check if it contains any errors.
+Mrs-Sam contains a set of tools for crawling web sitess.
 
-## Installation
+## Scenario
 
-Clone the repository and perform `npm install` in the cloned folder.
+The Scenario tool can be used to generate random scenario of crawling with the intent to identify errors.
 
-## Usage cli (no DataBase)
+see [Scenario](./scenario/README.md)
 
-To run a test of web site:
+## Page
 
-    node tester.js --options=[string] --url=[string] --out=[string]
+The Page tool can be used to crawl a huge set of pages from a web site.
 
+see [Page](./page/README.md)
 
-* --options: the configuration file (see default is options.js)
-* --url: the url of the website you want to crawl (ex: http://www.amazon.fr)
-* --out: the prefix of the output file(s)
+## Analysis
 
+The Analysis tool can be used to perform several analysis.
 
-## Usage GUI (with DataBase)
-
-A mongodb should run (with default port 27017)
-
-To run the GUI web server:
-
-    node server.js localhost
-
-
-* localhost is the name of the mongodb server 
-
-Then you can play with Mrs Sam front-end (http://localhost:8080).
-
-
-## Docker GUI + MongoDB
-
-Mrs Sam is coming with a Docker compose installer.
-
-Go to the docker directory and run:
-
-    docker-compose up 
-
-Then you can play with Mrs Sam front-end (http://localhost:8080).
-
+see [Analysis](./analysis/README.md)
