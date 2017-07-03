@@ -5,4 +5,4 @@ git clone https://github.com/xblanc33/mrs-sam.git
 ls 
 cd mrs-sam/page
 npm install
-node ./masterFetcher.js
+node ./masterFetcher.js --url="http://www.labri.fr" --rmq="rmq" --mg="mongo"
