@@ -3,6 +3,6 @@ mkdir work
 cd work
 git clone https://github.com/xblanc33/mrs-sam.git
 ls 
-cd mrs-sam
+cd mrs-sam/page
 npm install
-node ./site_crawler/master.js
+node ./masterFetcher.js
