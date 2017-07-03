@@ -8,9 +8,5 @@ services:
     image: "rabbitmq:3"
     ports: 
       - "5672:5672"
-  ftp:
-    image: "fauria/vsftp"
-    ports:
-      - "21:21"
   master:
     build: .
