@@ -1,7 +1,7 @@
 var amqp = require('amqplib/callback_api');
 var URI = require('urijs');
 var Nightmare = require('nightmare');
-var htmlAnalysis = require('../htmlAnalysis.js');
+var htmlAnalysis = require('./htmlAnalysis.js');
 var mong_client = require('mongodb').MongoClient;
 var ObjectID = require('mongodb').ObjectID;
 
