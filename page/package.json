@@ -21,6 +21,7 @@
   },
   "homepage": "https://github.com/xblanc33/mrs-sam#readme",
   "dependencies": {
+    "amqplib": "^0.5.1",
     "express": "^4.15.3",
     "mongodb": "^2.2.27",
     "path": "^0.12.7",
