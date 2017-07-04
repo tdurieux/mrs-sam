@@ -1,7 +1,8 @@
 var mong_client = require('mongodb').MongoClient;
 var ObjectID = require('mongodb').ObjectID;
-var SFTPClient = require('sftp-promises');
+var SFTPClient = require('sftp-promises');
 var Slave = require('./Slave.js').Slave;
+var winston = require('winston');
 
 class Master {
     constructor(url, numberOfSlave, mongoServerName, rabbitMQServerName, fileServerName ) {
@@ -17,9 +18,13 @@ class Master {
 
 
     initSFTP() {
-        this.sftpConfig = {host: this.fileServerName, username: 'mrssam', password: 'mrssam' };
-        var sftp = new SFTPClient(this.sftpConfig);
-        sftp.mkdir(`upload/${this.siteID}`).then(() => {console.log("directory created");});
+        this.sftpConfig = {
+            host: this.fileServerName,
+            username: 'mrssam',
+            password: 'mrssam'
+        };
+        var sftp = new SFTPClient(this.sftpConfig);
+        sftp.mkdir(`upload/${this.siteID}`).then(() => {winston.info('directory created');});
         
     }
 
@@ -36,15 +41,14 @@ class Master {
                                 rabbitMQServerName: this.rabbitMQServerName,
                                 mongoServerName: this.mongoServerName,
                                 fileServerName: this.fileServerName
-                            }
+                            };
                             startSlave(slaveCFG);
                             queueRootURL(this.siteID, this.url, this.rabbitMQServerName);
-                            console.log('masterFetcher is running with ObjectID=' + this.siteID)
                         }
-                    })
+                    });
                 });
             } else {
-                console.log(err)
+                winston.log(err);
             }
         });
     }
@@ -67,17 +71,17 @@ function queueRootURL(siteID, baseURL, rabbitMQServerName) {
     var amqp = require('amqplib/callback_api');
     amqp.connect(`amqp://${rabbitMQServerName}`, (err, conn) => {
         if (err) {
-            console.log(err)
+            winston.log(err);
         } else {
             conn.createChannel((err, ch) => {
                 if (err) {
-                    console.log(err);
+                    winston.log(err);
                 } else {
                     var msg = {
                         url: baseURL,
                         site: baseURL,
                         from: baseURL
-                    }
+                    };
                     ch.assertQueue(queue, { durable: false });
                     ch.sendToQueue(queue, new Buffer(JSON.stringify(msg)), { persistent: false });
                 }

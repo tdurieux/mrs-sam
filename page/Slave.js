@@ -4,8 +4,8 @@ var Nightmare = require('nightmare');
 var htmlAnalysis = require('./htmlAnalysis.js');
 var mong_client = require('mongodb').MongoClient;
 var ObjectID = require('mongodb').ObjectID;
-var fs = require('fs');
-var SFTPClient = require('sftp-promises');
+var SFTPClient = require('sftp-promises');
+var winston = require('winston');
 
 class Slave {
     constructor(siteID, baseURL, rabbitMQServer, mongoServer, fileServerName, show) {
@@ -21,13 +21,17 @@ class Slave {
 
         this.initSFTP();
 
-        console.log("Slave is ok");
+        winston.info('Slave is ok');
     }
 
 
     initSFTP() {
-        this.sftpConfig = {host: this.fileServerName, username: 'mrssam', password: 'mrssam' };
-        this.sftpClient = new SFTPClient(this.sftpConfig);
+        this.sftpConfig = {
+            host:this.fileServerName,
+            username:'mrssam',
+            password:'mrssam'
+        };
+        this.sftpClient = new SFTPClient(this.sftpConfig);
     }
 
 
@@ -35,19 +39,19 @@ class Slave {
     start() {
         amqp.connect(this.rmq_url, (err, conn) => {
             if (err) {
-                console.log(err)
+                winston.log(err);
             } else {
                 conn.createChannel((err, ch) => {
                     if (err) {
-                        console.log(err);
+                        winston.log(err);
                     } else {
                         this.ch = ch;
                         mong_client.connect(this.db_url, (err, db) => {
                             if (err) {
-                                console.log(err);
+                                winston.log(err);
                             } else {
                                 this.db = db;
-                                console.log("PageTester is running!");
+                                winston.info('PageTester is running!');
                                 this.ch.assertQueue(this.queue, { durable: false });
                                 this.getMsg();
                             }
@@ -76,7 +80,7 @@ class Slave {
             var currentURL = msgContent.url;
             var fromURL = msgContent.from;
             var siteURL = msgContent.site;
-            console.log(`Page Tester is consuming ${msgOrFalse.content.toString()}}`);
+            winston.info(`Page Tester is consuming ${msgOrFalse.content.toString()}}`);
 
 
             this.db.collection(`Pages_${this.siteID}`, (err, pageColl) => {
@@ -95,9 +99,7 @@ class Slave {
                                 .wait(2000)
                                 .screenshot()
                                 .then(buffer => {
-                                    console.log('buffer');
-                                    console.log(buffer);
-                                    this.sftpClient.putBuffer(buffer, `upload/${this.siteID}/${oid}.png`).then(() => {console.log("file saved");});
+                                    this.sftpClient.putBuffer(buffer, `upload/${this.siteID}/${oid}.png`).then(() => {winston.info('file saved');});
                                 })
                                 .then(() => {
                                     return nightmare.evaluate(htmlAnalysis).end();
@@ -126,13 +128,13 @@ class Slave {
                                         siteID: this.siteID,
                                         //hrefs: analysisResult.hrefs,
                                         body: analysisResult.hash
-                                    }
+                                    };
                                     pageColl.save(testedPage, null, (err, savePage) => {
                                         this.getMsg();
                                     });
                                 })
                                 .catch(e => {
-                                    console.log(e);
+                                    winston.log(e);
                                     this.getMsg();
                                 });
 
@@ -141,7 +143,7 @@ class Slave {
                         }
                     });
                 } else {
-                    console.log(err);
+                    winston.log(err);
                 }
             });
 

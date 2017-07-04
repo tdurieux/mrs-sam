@@ -1,23 +1,15 @@
-var  argv  =  require('yargs')
-    .usage('$0 server.js --mongo=[string] --rabbit=[string] --sftp=[string]').argv;
+var argv = require('yargs').usage('$0 server.js --mongo=[string] --rabbit=[string] --sftp=[string]').argv;
 var mongoServerName = argv.mongo || 'localhost';
 var rabbitServerName = argv.rabbit || 'localhost';
 var fileServerName = argv.sftp || 'localhost';
+
+var winston = require('winston');
 
 var express = require('express');
 var path = require('path');
 var bodyParser = require('body-parser');
 var application_root = __dirname;
 var app = express();
-
-
-var mong_client = require('mongodb').MongoClient;
-var ObjectID = require('mongodb').ObjectID;
-var db_url = `mongodb://${mongoServerName}:27017/mrs-sam-page`;
-
-
-
-
 
 
 //files for HTML pages
@@ -48,5 +40,5 @@ files.forEach(function(file) {
 
 
 app.listen(8080, function() {
-    console.log('Mrs Sam Page is listening on port 8080!');
+    winston.info('Mrs Sam Page is listening on port 8080!');
 });

@@ -14,12 +14,12 @@ module.exports = function() {
     }
 
     function generateStructuralDOMHash(element) {
-        var openTagName = element.tagName ? `<${element.tagName}>` : "";
+        var openTagName = element.tagName ? `<${element.tagName}>` : '';
         var hash = openTagName;
         for (var i = 0; i < element.childNodes.length; i++) {
             hash = hash + generateStructuralDOMHash(element.childNodes[i]);
         }
-        var closeTagName = element.tagName ? `</${element.tagName}>` : "";
+        var closeTagName = element.tagName ? `</${element.tagName}>` : '';
         hash = hash + closeTagName;
         return hash.replace(/\s{2,10}/g, ' ');
     }
@@ -60,7 +60,7 @@ module.exports = function() {
         for (var i = 0; i < form_tags.length; i++) {
             var form = { form_selector: computeSelector(form_tags[i]) };
             form.inputs = new Array();
-            var input_tags = form_tags[i].getElementsByTagName('input')
+            var input_tags = form_tags[i].getElementsByTagName('input');
             for (var j = 0; j < input_tags.length; j++) {
                 form.inputs.push({
                     selector: computeSelector(input_tags[j]),
@@ -90,23 +90,9 @@ module.exports = function() {
                 el = el.parentNode;
             }
         }
-        return names.join(" > ");
+        return names.join(' > ');
     }
 
-
-    /*function computeSelector(el) {
-           var names = [];
-           while (el.parentNode) {
-               if (el == el.ownerDocument.documentElement)
-                   names.unshift(el.tagName);
-               else {
-                   for (var c = 1, e = el; e.previousElementSibling; e = e.previousElementSibling, c++);
-                   names.unshift(`${el.tagName}:nth-child(${c})`);
-               }
-               el = el.parentNode;
-           }
-           return names.join(" > ");
-       }*/
 
 
     function isMailTo(a_link) {
@@ -116,4 +102,4 @@ module.exports = function() {
     function isPdfFile(a_link) {
         return a_link.href.endsWith('.pdf');
     }
-}
+};
