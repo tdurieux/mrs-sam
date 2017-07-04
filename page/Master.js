@@ -5,7 +5,7 @@ var Slave = require('./Slave.js').Slave;
 var winston = require('winston');
 
 class Master {
-    constructor(url, numberOfSlave, mongoServerName, rabbitMQServerName, fileServerName ) {
+    constructor(url, numberOfSlave, mongoServerName, rabbitMQServerName, fileServerName) {
         this.url = url;
         this.numberOfSlave = numberOfSlave;
         this.mongoServerName = mongoServerName;
@@ -13,6 +13,7 @@ class Master {
         this.fileServerName = fileServerName;
         this.siteID = new ObjectID();
         this.dbURL = `mongodb://${this.mongoServerName}:27017/mrs-sam-page`;
+        this.slaves = [];
         this.initSFTP();
     }
 
@@ -24,8 +25,8 @@ class Master {
             password: 'mrssam'
         };
         var sftp = new SFTPClient(this.sftpConfig);
-        sftp.mkdir(`upload/${this.siteID}`).then(() => {winston.info('directory created');});
-        
+        sftp.mkdir(`upload/${this.siteID}`).then(() => { winston.info('directory created'); });
+
     }
 
     start() {
@@ -36,13 +37,13 @@ class Master {
                         if (!err) {
                             var slaveCFG = {
                                 siteID: this.siteID,
-                                url:this.url,
+                                url: this.url,
                                 numberOfSlave: this.numberOfSlave,
                                 rabbitMQServerName: this.rabbitMQServerName,
                                 mongoServerName: this.mongoServerName,
                                 fileServerName: this.fileServerName
                             };
-                            startSlave(slaveCFG);
+                            startSlave.call(this, slaveCFG);
                             queueRootURL(this.siteID, this.url, this.rabbitMQServerName);
                         }
                     });
@@ -54,13 +55,15 @@ class Master {
     }
 
     stop() {
-
+        this.slaves.forEach(slave => { 
+            winston.info('slave is stopped!');
+            slave.stop(); 
+        });
     }
 }
 
 
 function startSlave(slaveCFG) {
-    this.slaves = [];
     for (var i = 0; i < slaveCFG.numberOfSlave; i++) {
         var show = false;
         var slave = new Slave(slaveCFG.siteID, slaveCFG.url, slaveCFG.rabbitMQServerName, slaveCFG.mongoServerName, slaveCFG.fileServerName, show);

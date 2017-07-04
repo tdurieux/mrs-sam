@@ -22,15 +22,13 @@
 
 
 
-    angular.module('mrsSamApp').controller('siteFormController', ['$scope', '$http', 'siteService', siteFormControllerFactory]);
+    angular.module('mrsSamApp').controller('siteFormController', ['$scope', '$http', siteFormControllerFactory]);
 
-    function siteFormControllerFactory($scope, $http, $siteService) {
+    function siteFormControllerFactory($scope, $http) {
         $scope.options = {
             url : "http://www.labri.fr",
             numberOfSlave : 1
         };
-
-        $scope.sites = $siteService.get();
 
         $scope.crawl = function(options) {
             $http.post('/site', options).then(function successCallback(response) {
@@ -40,10 +38,16 @@
     }
 
 
-    angular.module('mrsSamApp').controller('sitesViewController', ['$scope', 'siteService', sitesViewControllerFactory]);
+    angular.module('mrsSamApp').controller('sitesViewController', ['$scope', '$http', 'siteService', sitesViewControllerFactory]);
 
-    function sitesViewControllerFactory($scope, siteService) {
+    function sitesViewControllerFactory($scope, $http, siteService) {
         $scope.sites = siteService.get();
+
+        $scope.stopCrawling = function (aSite) {
+            $http.post(`/site/${aSite._id}`).then(function successCallback(response) {
+                alert('site has been paused');
+            }, function errorCallback(response) {});
+        }
     }
 
 })();

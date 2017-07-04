@@ -13,7 +13,10 @@
             </div>
         </div>
         <div class="row" ng-repeat="aSite in sites">
-            <div class="col-sm-4" > URL : {{aSite.baseurl}} </div>
+            <div class="col-sm-3" > URL : {{aSite.baseurl}} </div>
+            <div class="col-sm-3" > ID : {{aSite._id}} </div>
+            <div class="col-sm-3" > State : {{aSite.state}} </div>
+            <div class="col-sm-3" > <button ng-click=stopCrawling(aSite)> Stop </button>  </div>
         </div>
     </div>
 </section>

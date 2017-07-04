@@ -53,7 +53,7 @@ class Slave {
                                 this.db = db;
                                 winston.info('PageTester is running!');
                                 this.ch.assertQueue(this.queue, { durable: false });
-                                this.stop = false;
+                                this.isRunning = true;
                                 this.getMsg();
                             }
                         });
@@ -64,11 +64,11 @@ class Slave {
     }
 
     stop() {
-        this.stop = true;
+        this.isRunning = false;
     }
 
     getMsg() {
-        if (!this.stop) {
+        if (this.isRunning) {
             this.ch.get(this.queue, { noAck: false }, (err, msgOrFalse) => {
                 if (err) {
                     setTimeout(() => {
@@ -136,7 +136,7 @@ class Slave {
                                         //hrefs: analysisResult.hrefs,
                                         body: analysisResult.hash
                                     };
-                                    pageColl.save(testedPage, null, (err, savePage) => {
+                                    pageColl.save(testedPage, null, (err) => {
                                         this.getMsg();
                                     });
                                 })

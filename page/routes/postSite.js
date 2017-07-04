@@ -19,25 +19,14 @@ module.exports.init = function(mongoServerName, rabbitServerName, fileServerName
         res.status(200).end();
     })
     .post('/site/:id', function(req, res) { //req.params.id
-            mongo_client.connect(db_url, (err, db) => {
-                if (!err) {
-
-                    db.collection('site', function(err, scenarioCollection) {
-                        if (err) {
-                            res.send(err).status(404).end();
-                        } else {
-                            scenarioCollection.find({ test_id: new ObjectID(req.params.id) }).toArray(function(err, scenarioArray) {
-                                if (err) {
-                                    res.send(err).status(500).end();
-                                } else {
-                                    res.send(scenarioArray).status(200).end();
-                                }
-                            });
-                        }
-                    })
-                } else {
-                    res.send(err).status(500).end();
-                }
-            });
+            console.log(`stop ${req.params.id}`);
+            var oid = new ObjectID(req.params.id);
+            var siteMaster = runningMasters.find( master => {return master.siteID.equals(oid)});
+            if (siteMaster) {
+                siteMaster.stop();
+            } else {
+                console.log('no siteID');
+            }
+            res.status(200).end();
         })
 };
