@@ -1,7 +1,5 @@
 var mong_client = require('mongodb').MongoClient;
 var ObjectID = require('mongodb').ObjectID;
-
-var URLChecker = require('./URLChecker.js').URLChecker;
 var Slave = require('./Slave.js').Slave;
 
 class Master {

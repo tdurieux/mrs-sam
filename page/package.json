@@ -4,6 +4,7 @@
   "description": "Mrs Sam Page is a distributed crawler. It aims at crawling huge web sites.",
   "main": "server.js",
   "scripts": {
+    "postinstall": "node_modules/.bin/bower install",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -22,6 +23,7 @@
   "homepage": "https://github.com/xblanc33/mrs-sam#readme",
   "dependencies": {
     "amqplib": "^0.5.1",
+    "body-parser": "^1.17.2",
     "express": "^4.15.3",
     "mongodb": "^2.2.27",
     "nightmare": "^2.10.0",

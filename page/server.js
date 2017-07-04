@@ -1,15 +1,19 @@
+var  argv  =  require('yargs')
+    .usage('$0 server.js --mongo=[string] --rabbit=[string] ').argv;
+var mongoServerName = argv.mongo || 'localhost';
+var rabbitServerName = argv.rabbit || 'localhost';
+
 var express = require('express');
 var path = require('path');
 var bodyParser = require('body-parser');
-
-var mongoServer = process.argv.slice(2)[0];
 var application_root = __dirname;
-var db_url = `mongodb://${mongoServer}:27017/mrssam-page`
+var app = express();
 
 
 var mong_client = require('mongodb').MongoClient;
 var ObjectID = require('mongodb').ObjectID;
-var app = express();
+var db_url = `mongodb://${mongoServerName}:27017/mrs-sam-page`
+
 
 
 //files for HTML pages
@@ -26,25 +30,19 @@ app.use(function(req, res, next) {
 
 
 
-mong_client.connect(db_url, function(err, db) {
-    if (err) {
-        console.log(err);
-    } else {
-        var fs = require('fs');
-        var RouteDir = 'routes';
-        var files = fs.readdirSync(RouteDir);
+var fs = require('fs');
+var RouteDir = 'routes';
+var files = fs.readdirSync(RouteDir);
 
-        files.forEach(function(file) {
-            var filePath = path.resolve('./', RouteDir, file);
-            var route = require(filePath);
-            route.init(app, db, ObjectID);
-        });
-
-    }
+files.forEach(function(file) {
+    var filePath = path.resolve('./', RouteDir, file);
+    var route = require(filePath);
+    route.init(mongoServerName, rabbitServerName, app);
 });
 
 
 
+
 app.listen(8080, function() {
-    console.log('Mrs Sam-page is listening on port 8080!');
+    console.log('Mrs Sam Page is listening on port 8080!');
 });

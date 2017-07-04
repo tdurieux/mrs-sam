@@ -1,60 +1,15 @@
-module.exports.init = function(ws, db, ObjectID) {
-    ws.post('/site', function(req, res) {
+var Master = require('../Master.js').Master;
+module.exports.init = function(mongoServerName, rabbitServerName, webServer) {
+    webServer.post('/site', function(req, res) {
         var options = req.body;
-        //options.map = {active: false};
-        options.crawler.show = false;
-        options.diff = { active: false };
-        options.replay = { active: false };
+        var url = options.url;
+        var numberOfSlave = options.numberOfSlave || 0;
 
-        var test = {};
-        test.options = options;
-        test._id = ObjectID();
+        var siteMaster = new Master(url, numberOfSlave, mongoServerName, rabbitServerName);
+        var siteID = siteMaster.siteID;
+        siteMaster.start();
 
-        db.collection("site",function(err,testCollection) {
-            if (!err) testCollection.save(test);
-        });
-
-        var Crawler = require('../crawler.js').Crawler;
-        var crawler = new Crawler(options.URL, options);
-        crawler.addProgressionListener(notification => {
-            switch (notification.type) {
-                case 'CRAWLER_OK':
-                    saveStatistics(notification.value);
-                    break;
-                case 'CRAWLER_ERROR':
-                    break;
-                case 'SCENARIO_OK':
-                case 'SCENARIO_ERROR':
-                    saveScenario(notification.value);
-                    break;
-            }
-        });
-        crawler.start(function(err) {}, function(result) {});
-        res.send(`Test request has been received, please look at the result page in ${options.crawler.time} minutes.`);
+        res.send(`Test request has been received, the ID is ${siteID}.`);
         res.status(200).end();
-
-
-        function saveStatistics(result) {
-            db.collection("test", function(err, testCollection) {
-                if (err) {
-                    res.status(500).end();
-                } else {
-                    test.duration = result.duration;
-                    testCollection.save(test);
-                }
-            })
-        }
-
-        function saveScenario(scenario) {
-            db.collection("scenario", function(err, scenarioCollection) {
-                if (!err) {
-                    if (!scenario._id) {
-                        scenario._id = ObjectID();
-                    }
-                    scenario.test_id = test._id;
-                    scenarioCollection.save(scenario);
-                }
-            })
-        }
     })
 };
