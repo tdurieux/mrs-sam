@@ -21,20 +21,17 @@ class Slave {
         this.initFTP();
     }
 
+
     initFTP() {
         this.ftpClient  =  new  JSFtp({  
             host:  this.ftpServerName,
             port: 21,
-              user:   "mrssam",
-              pass:   "mrssam"  // defaults to "@anonymous" 
-        });
-
-        this.ftpClient.raw("mkd",  `/${this.siteID}`,  function(err,  data)  {    
-            if  (err)  return  console.error(err);     
-            console.log(data.text);  // Show the FTP response text to the user 
-            console.log(data.code);  // Show the FTP response code to the user 
+            user:   "mrssam",
+            pass:   "mrssam"  // defaults to "@anonymous" 
         });
     }
+
+
 
     start() {
         amqp.connect(this.rmq_url, (err, conn) => {
@@ -101,7 +98,7 @@ class Slave {
                                 .screenshot(screenShotPath)
                                 .then(buffer => {
                                     this.ftpClient.put(buffer,  `/${this.siteID}/${oid}.png`,  function(hadError)  {  
-                                        if  (!hadError) console.log("File transferred successfully!");
+                                        if  (!hadError)  console.log("File transferred successfully!");
                                     });
                                 })
                                 .evaluate(htmlAnalysis)

@@ -1,5 +1,6 @@
 var mong_client = require('mongodb').MongoClient;
 var ObjectID = require('mongodb').ObjectID;
+var  JSFtp  =  require("jsftp");
 var Slave = require('./Slave.js').Slave;
 
 class Master {
@@ -11,6 +12,28 @@ class Master {
         this.ftpServerName = ftpServerName;
         this.siteID = new ObjectID();
         this.dbURL = `mongodb://${this.mongoServerName}:27017/mrs-sam-page`;
+        this.initFTP();
+    }
+
+
+    initFTP() {
+        this.ftpClient  =  new  JSFtp({  
+            host:  this.ftpServerName,
+            port: 21,
+            user:   "mrssam",
+            pass:   "mrssam"  // defaults to "@anonymous" 
+        });
+
+        console.log("initFTP");
+
+        this.ftpClient.raw("mkd",  `/${this.siteID}`,  function(err,  data)  {    
+            if  (err)  {
+                console.log(err);
+            } else {
+                console.log(data.text);  // Show the FTP response text to the user 
+                console.log(data.code);  // Show the FTP response code to the user 
+            }
+        });
     }
 
     start() {
