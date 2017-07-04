@@ -14,11 +14,14 @@ class Slave {
         this.queue = `urlOf${siteID}`;
         this.rmq_url = `amqp://${rabbitMQServer}`;
         this.db_url = `mongodb://${mongoServer}:27017/mrs-sam-page`;
+        this.ftpServerName = ftpServerName;
         this.show = show;
         this.ch = undefined;
         this.db = undefined;
 
         this.initFTP();
+
+        console.log("Slave is ok");
     }
 
 
