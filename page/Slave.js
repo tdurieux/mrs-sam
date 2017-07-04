@@ -5,33 +5,29 @@ var htmlAnalysis = require('./htmlAnalysis.js');
 var mong_client = require('mongodb').MongoClient;
 var ObjectID = require('mongodb').ObjectID;
 var fs = require('fs');
-var  JSFtp  =  require("jsftp");
+var SFTPClient = require('sftp-promises');
 
 class Slave {
-    constructor(siteID, baseURL, rabbitMQServer, mongoServer, ftpServerName, show) {
+    constructor(siteID, baseURL, rabbitMQServer, mongoServer, fileServerName, show) {
         this.siteID = siteID;
         this.baseURI = new URI(baseURL);
         this.queue = `urlOf${siteID}`;
         this.rmq_url = `amqp://${rabbitMQServer}`;
         this.db_url = `mongodb://${mongoServer}:27017/mrs-sam-page`;
-        this.ftpServerName = ftpServerName;
+        this.fileServerName = fileServerName;
         this.show = show;
         this.ch = undefined;
         this.db = undefined;
 
-        this.initFTP();
+        this.initSFTP();
 
         console.log("Slave is ok");
     }
 
 
-    initFTP() {
-        this.ftpClient  =  new  JSFtp({  
-            host:  this.ftpServerName,
-            port: 21,
-            user:   "mrssam",
-            pass:   "mrssam"  // defaults to "@anonymous" 
-        });
+    initSFTP() {
+        this.sftpConfig = {host: this.fileServerName, username: 'mrssam', password: 'mrssam' };
+        this.sftpClient = new SFTPClient(this.sftpConfig);
     }
 
 
@@ -101,14 +97,7 @@ class Slave {
                                 .then(buffer => {
                                     console.log('buffer');
                                     console.log(buffer);
-                                    this.ftpClient.put(buffer,  `${this.siteID}/${oid}.png`,  function(hadError)  {  
-                                        if  (!hadError)  {
-                                            console.log("File transferred successfully!");
-                                        } else {
-                                            console.log('FTP Error');
-                                            console.log(hadError);
-                                        }
-                                    });
+                                    this.sftpClient.putBuffer(buffer, `upload/${this.siteID}/${oid}.png`).then(() => {console.log("file saved");});
                                 })
                                 .then(() => {
                                     return nightmare.evaluate(htmlAnalysis).end();

@@ -1,39 +1,26 @@
 var mong_client = require('mongodb').MongoClient;
 var ObjectID = require('mongodb').ObjectID;
-var  JSFtp  =  require("jsftp");
+var SFTPClient = require('sftp-promises');
 var Slave = require('./Slave.js').Slave;
 
 class Master {
-    constructor(url, numberOfSlave, mongoServerName, rabbitMQServerName, ftpServerName ) {
+    constructor(url, numberOfSlave, mongoServerName, rabbitMQServerName, fileServerName ) {
         this.url = url;
         this.numberOfSlave = numberOfSlave;
         this.mongoServerName = mongoServerName;
         this.rabbitMQServerName = rabbitMQServerName;
-        this.ftpServerName = ftpServerName;
+        this.fileServerName = fileServerName;
         this.siteID = new ObjectID();
         this.dbURL = `mongodb://${this.mongoServerName}:27017/mrs-sam-page`;
-        this.initFTP();
+        this.initSFTP();
     }
 
 
-    initFTP() {
-        this.ftpClient  =  new  JSFtp({  
-            host:  this.ftpServerName,
-            port: 21,
-            user: "mrssam",
-            pass: "mrssam"  // defaults to "@anonymous" 
-        });
-
-        console.log("initFTP");
-
-        this.ftpClient.raw("mkd",  `${this.siteID}`,  function(err,  data)  {    
-            if  (err)  {
-                console.log(err);
-            } else {
-                console.log(data.text);  // Show the FTP response text to the user 
-                console.log(data.code);  // Show the FTP response code to the user 
-            }
-        });
+    initSFTP() {
+        this.sftpConfig = {host: this.fileServerName, username: 'mrssam', password: 'mrssam' };
+        var sftp = new SFTPClient(this.sftpConfig);
+        sftp.mkdir(`upload/${this.siteID}`).then(() => {console.log("directory created");});
+        
     }
 
     start() {
@@ -48,7 +35,7 @@ class Master {
                                 numberOfSlave: this.numberOfSlave,
                                 rabbitMQServerName: this.rabbitMQServerName,
                                 mongoServerName: this.mongoServerName,
-                                ftpServerName: this.ftpServerName
+                                fileServerName: this.fileServerName
                             }
                             startSlave(slaveCFG);
                             queueRootURL(this.siteID, this.url, this.rabbitMQServerName);
@@ -67,7 +54,7 @@ class Master {
 function startSlave(slaveCFG) {
     for (var i = 0; i < slaveCFG.numberOfSlave; i++) {
         var show = false;
-        var slave = new Slave(slaveCFG.siteID, slaveCFG.url, slaveCFG.rabbitMQServerName, slaveCFG.mongoServerName, slaveCFG.ftpServerName, show);
+        var slave = new Slave(slaveCFG.siteID, slaveCFG.url, slaveCFG.rabbitMQServerName, slaveCFG.mongoServerName, slaveCFG.fileServerName, show);
         slave.start();
     }
 }

@@ -1,7 +1,7 @@
 var mongo_client = require('mongodb').MongoClient;
 var ObjectID = require('mongodb').ObjectID;
 
-module.exports.init = function(mongoServerName, rabbitServerName, ftpServerName, webServer) {
+module.exports.init = function(mongoServerName, rabbitServerName, fileServerName, webServer) {
     var db_url = `mongodb://${mongoServerName}:27017/mrs-sam-page`
     webServer.get('/site', function(req, res) {
             mongo_client.connect(db_url, (err, db) => {

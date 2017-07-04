@@ -8,14 +8,11 @@ services:
     image: "rabbitmq:3"
     ports: 
       - "5672:5672"
-  vsftpd:
-    image: "fauria/vsftpd"
-    environment:
-      - FTP_USER="mrssam"
-      - FTP_PASS="mrssam"
-      - restart=always
+  sftp:
+    image: "atmoze/sftp"
+    command: mrssam:mrssam:::upload
     ports:
-      - "21:21" 
+      - "22:22" 
   master:
     build: .
     ports:
