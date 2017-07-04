@@ -94,25 +94,25 @@ class Slave {
                         if (err || !recoredPage) {
                             var oid = ObjectID();
                             //var screenShotPath = this.siteImgDirPath + "/" + oid + ".png";
-                            var nightmare = new Nightmare({ show: this.show }).goto(currentURL)
-                                .wait(2000);
-
-                            nightmare.screenshot()
+                            var nightmare = new Nightmare({ show: this.show });
+                            nightmare.goto(currentURL)
+                                .wait(2000)
+                                .screenshot()
                                 .then(buffer => {
                                     console.log('buffer');
                                     console.log(buffer);
                                     this.ftpClient.put(buffer,  `${this.siteID}/${oid}.png`,  function(hadError)  {  
                                         if  (!hadError)  {
                                             console.log("File transferred successfully!");
-                                        }
-                                        else {
+                                        } else {
                                             console.log('FTP Error');
                                             console.log(hadError);
                                         }
                                     });
-                                });
-
-                            nightmare.evaluate(htmlAnalysis)
+                                })
+                                .then(() => {
+                                    return nightmare.evaluate(htmlAnalysis)
+                                })
                                 .end()
                                 .then(analysisResult => {
                                     analysisResult.hrefs.forEach(href => {
