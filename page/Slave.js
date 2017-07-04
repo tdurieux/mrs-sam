@@ -111,7 +111,7 @@ class Slave {
                                             console.log(hadError);
                                         }
                                     });
-                                    done();
+                                    return nightmare;
                                 })
                                 .evaluate(htmlAnalysis)
                                 .end()
