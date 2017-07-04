@@ -1,11 +1,11 @@
 var Master = require('../Master.js').Master;
-module.exports.init = function(mongoServerName, rabbitServerName, webServer) {
+module.exports.init = function(mongoServerName, rabbitServerName, ftpServerName, webServer) {
     webServer.post('/site', function(req, res) {
         var options = req.body;
         var url = options.url;
         var numberOfSlave = options.numberOfSlave || 0;
 
-        var siteMaster = new Master(url, numberOfSlave, mongoServerName, rabbitServerName);
+        var siteMaster = new Master(url, numberOfSlave, mongoServerName, rabbitServerName, ftpServerName);
         var siteID = siteMaster.siteID;
         siteMaster.start();
 

@@ -5,9 +5,10 @@ var htmlAnalysis = require('./htmlAnalysis.js');
 var mong_client = require('mongodb').MongoClient;
 var ObjectID = require('mongodb').ObjectID;
 var fs = require('fs');
+var  JSFtp  =  require("jsftp");
 
 class Slave {
-    constructor(siteID, baseURL, rabbitMQServer, mongoServer, show) {
+    constructor(siteID, baseURL, rabbitMQServer, mongoServer, ftpServerName, show) {
         this.siteID = siteID;
         this.baseURI = new URI(baseURL);
         this.queue = `urlOf${siteID}`;
@@ -16,14 +17,23 @@ class Slave {
         this.show = show;
         this.ch = undefined;
         this.db = undefined;
-        var imgDirPath = './img';
-        if (!fs.existsSync(imgDirPath)) {
-            fs.mkdirSync(imgDirPath);
-        }
-        this.siteImgDirPath = imgDirPath + '/' + this.siteID;
-        if (!fs.existsSync(this.siteImgDirPath)) {
-            fs.mkdirSync(this.siteImgDirPath);
-        }
+
+        this.initFTP();
+    }
+
+    initFTP() {
+        this.ftpClient  =  new  JSFtp({  
+            host:  this.ftpServerName,
+            port: 21,
+              user:   "mrssam",
+              pass:   "mrssam"  // defaults to "@anonymous" 
+        });
+
+        this.ftpClient.raw("mkd",  `/${this.siteID}`,  function(err,  data)  {    
+            if  (err)  return  console.error(err);     
+            console.log(data.text);  // Show the FTP response text to the user 
+            console.log(data.code);  // Show the FTP response code to the user 
+        });
     }
 
     start() {
@@ -83,12 +93,17 @@ class Slave {
                     }, (err, recoredPage) => {
                         if (err || !recoredPage) {
                             var oid = ObjectID();
-                            var screenShotPath = this.siteImgDirPath + "/" + oid + ".png";
+                            //var screenShotPath = this.siteImgDirPath + "/" + oid + ".png";
                             var nightmare = new Nightmare({ show: this.show });
                             //this.
                             nightmare.goto(currentURL)
                                 .wait(2000)
                                 .screenshot(screenShotPath)
+                                .then(buffer => {
+                                    this.ftpClient.put(buffer,  `/${this.siteID}/${oid}.png`,  function(hadError)  {  
+                                        if  (!hadError) console.log("File transferred successfully!");
+                                    });
+                                })
                                 .evaluate(htmlAnalysis)
                                 .end()
                                 .then(analysisResult => {

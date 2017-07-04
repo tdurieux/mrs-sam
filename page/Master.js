@@ -3,11 +3,12 @@ var ObjectID = require('mongodb').ObjectID;
 var Slave = require('./Slave.js').Slave;
 
 class Master {
-    constructor(url, numberOfSlave, mongoServerName, rabbitMQServerName) {
+    constructor(url, numberOfSlave, mongoServerName, rabbitMQServerName, ftpServerName ) {
         this.url = url;
         this.numberOfSlave = numberOfSlave;
         this.mongoServerName = mongoServerName;
         this.rabbitMQServerName = rabbitMQServerName;
+        this.ftpServerName = ftpServerName;
         this.siteID = new ObjectID();
         this.dbURL = `mongodb://${this.mongoServerName}:27017/mrs-sam-page`;
     }

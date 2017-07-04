@@ -13,7 +13,10 @@ var app = express();
 
 var mong_client = require('mongodb').MongoClient;
 var ObjectID = require('mongodb').ObjectID;
-var db_url = `mongodb://${mongoServerName}:27017/mrs-sam-page`
+var db_url = `mongodb://${mongoServerName}:27017/mrs-sam-page`;
+
+
+
 
 
 
@@ -38,7 +41,7 @@ var files = fs.readdirSync(RouteDir);
 files.forEach(function(file) {
     var filePath = path.resolve('./', RouteDir, file);
     var route = require(filePath);
-    route.init(mongoServerName, rabbitServerName, app);
+    route.init(mongoServerName, rabbitServerName, ftpServerName, app);
 });
 
 

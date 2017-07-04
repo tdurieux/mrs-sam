@@ -1,6 +1,10 @@
 #!/bin/bash
-mkdir work
-cd work
+WORK_DIRECTORY="work"
+if [[-d "$WORK_DIRECTORY"]]; then 
+	mkdir "$WORK_DIRECTORY" 
+fi
+
+cd "$WORK_DIRECTORY"
 git clone https://github.com/xblanc33/mrs-sam.git
 ls 
 cd mrs-sam/page
