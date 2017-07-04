@@ -1,4 +1,5 @@
 #!/bin/bash
+rm -fr work
 mkdir -p work 
 cd work
 git clone https://github.com/xblanc33/mrs-sam.git
