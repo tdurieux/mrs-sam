@@ -94,11 +94,10 @@ class Slave {
                         if (err || !recoredPage) {
                             var oid = ObjectID();
                             //var screenShotPath = this.siteImgDirPath + "/" + oid + ".png";
-                            var nightmare = new Nightmare({ show: this.show });
-                            //this.
-                            nightmare.goto(currentURL)
-                                .wait(2000)
-                                .screenshot()
+                            var nightmare = new Nightmare({ show: this.show }).goto(currentURL)
+                                .wait(2000);
+
+                            nightmare.screenshot()
                                 .then(buffer => {
                                     console.log('buffer');
                                     console.log(buffer);
@@ -111,9 +110,9 @@ class Slave {
                                             console.log(hadError);
                                         }
                                     });
-                                    return nightmare;
-                                })
-                                .evaluate(htmlAnalysis)
+                                });
+
+                            nightmare.evaluate(htmlAnalysis)
                                 .end()
                                 .then(analysisResult => {
                                     analysisResult.hrefs.forEach(href => {
