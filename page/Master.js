@@ -34,7 +34,7 @@ class Master {
 
 function startSlave(siteID, baseURL, numberOfSlave, mongoServerName, rabbitMQServerName) {
     for (var i = 0; i < numberOfSlave; i++) {
-        var show = true;
+        var show = false;
         var slave = new Slave(siteID, baseURL, rabbitMQServerName, mongoServerName, show);
         slave.start();
     }
