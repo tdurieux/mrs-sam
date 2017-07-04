@@ -47,6 +47,7 @@ class Master {
                                 url:this.url,
                                 numberOfSlave: this.numberOfSlave,
                                 rabbitMQServerName: this.rabbitMQServerName,
+                                mongoServerName: this.mongoServerName,
                                 ftpServerName: this.ftpServerName
                             }
                             startSlave(slaveCFG);
