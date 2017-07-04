@@ -111,9 +111,8 @@ class Slave {
                                     });
                                 })
                                 .then(() => {
-                                    return nightmare.evaluate(htmlAnalysis)
+                                    return nightmare.evaluate(htmlAnalysis).end();
                                 })
-                                .end()
                                 .then(analysisResult => {
                                     analysisResult.hrefs.forEach(href => {
                                         var msg = JSON.stringify({
