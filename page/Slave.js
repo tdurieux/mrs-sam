@@ -111,6 +111,7 @@ class Slave {
                                             console.log(hadError);
                                         }
                                     });
+                                    done();
                                 })
                                 .evaluate(htmlAnalysis)
                                 .end()
