@@ -1,7 +1,8 @@
 var  argv  =  require('yargs')
-    .usage('$0 server.js --mongo=[string] --rabbit=[string] ').argv;
+    .usage('$0 server.js --mongo=[string] --rabbit=[string] --ftp=[string]').argv;
 var mongoServerName = argv.mongo || 'localhost';
 var rabbitServerName = argv.rabbit || 'localhost';
+var ftpServerName = argv.ftp || 'localhost';
 
 var express = require('express');
 var path = require('path');

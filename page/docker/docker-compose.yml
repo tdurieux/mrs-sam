@@ -4,11 +4,11 @@ services:
     image: "mongo:3.0"
     ports:
       - "27017:27017"
-  rmq:
+  rabbit:
     image: "rabbitmq:3"
     ports: 
       - "5672:5672"
-  ftp:
+  vsftpd:
     image: "fauria/vsftpd"
     environment:
       - FTP_USER=mrssam
