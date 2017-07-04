@@ -3,7 +3,7 @@ var ObjectID = require('mongodb').ObjectID;
 
 module.exports.init = function(mongoServerName, rabbitServerName, fileServerName, webServer) {
     var db_url = `mongodb://${mongoServerName}:27017/mrs-sam-page`;
-    webServer.get('/site', function(req, res) {
+    webServer.get('/Site', function(req, res) {
             mongo_client.connect(db_url, (err, db) => {
                 if (!err) {
                     db.collection('site', function(err, siteCollection) {
@@ -24,7 +24,7 @@ module.exports.init = function(mongoServerName, rabbitServerName, fileServerName
                 }
             });
         })
-        .get('/site/:id', function(req, res) { //req.params.id
+        .get('/Site/:id', function(req, res) { //req.params.id
             mongo_client.connect(db_url, (err, db) => {
                 if (!err) {
 
