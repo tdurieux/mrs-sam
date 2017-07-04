@@ -9,7 +9,7 @@ services:
     ports: 
       - "5672:5672"
   sftp:
-    image: "atmoze/sftp"
+    image: "atmoz/sftp"
     command: mrssam:mrssam:::upload
     ports:
       - "22:22" 
