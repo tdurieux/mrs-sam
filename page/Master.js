@@ -42,7 +42,14 @@ class Master {
                 db.collection('Site', (err, siteColl) => {
                     siteColl.insertOne({ _id: this.siteID, baseurl: this.url }, (err, res) => {
                         if (!err) {
-                            startSlave(this.siteID, this.url, this.numberOfSlave, this.mongoServerName, this.rabbitMQServerName);
+                            var slaveCFG = {
+                                siteID: this.siteID,
+                                url:this.url,
+                                numberOfSlave: this.numberOfSlave,
+                                rabbitMQServerName: this.rabbitMQServerName,
+                                ftpServerName: this.ftpServerName
+                            }
+                            startSlave(slaveCFG);
                             queueRootURL(this.siteID, this.url, this.rabbitMQServerName);
                             console.log('masterFetcher is running with ObjectID=' + this.siteID)
                         }
@@ -56,10 +63,10 @@ class Master {
 }
 
 
-function startSlave(siteID, baseURL, numberOfSlave, mongoServerName, rabbitMQServerName) {
-    for (var i = 0; i < numberOfSlave; i++) {
+function startSlave(slaveCFG) {
+    for (var i = 0; i < slaveCFG.numberOfSlave; i++) {
         var show = false;
-        var slave = new Slave(siteID, baseURL, rabbitMQServerName, mongoServerName, show);
+        var slave = new Slave(slaveCFG.siteID, slaveCFG.url, slaveCFG.rabbitMQServerName, slaveCFG.mongoServerName, slaveCFG.ftpServerName, show);
         slave.start();
     }
 }
