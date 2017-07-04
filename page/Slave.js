@@ -53,6 +53,7 @@ class Slave {
                                 this.db = db;
                                 winston.info('PageTester is running!');
                                 this.ch.assertQueue(this.queue, { durable: false });
+                                this.stop = false;
                                 this.getMsg();
                             }
                         });
