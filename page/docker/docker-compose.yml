@@ -11,8 +11,8 @@ services:
   vsftpd:
     image: "fauria/vsftpd"
     environment:
-      - FTP_USER=mrssam
-      - FTP_PASS=mrssam
+      - FTP_USER="mrssam"
+      - FTP_PASS="mrssam"
       - restart=always
     ports:
       - "21:21" 

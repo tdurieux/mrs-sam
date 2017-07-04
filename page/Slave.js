@@ -100,8 +100,16 @@ class Slave {
                                 .wait(2000)
                                 .screenshot()
                                 .then(buffer => {
-                                    this.ftpClient.put(buffer,  `/${this.siteID}/${oid}.png`,  function(hadError)  {  
-                                        if  (!hadError)  console.log("File transferred successfully!");
+                                    console.log('buffer');
+                                    console.log(buffer);
+                                    this.ftpClient.put(buffer,  `${this.siteID}/${oid}.png`,  function(hadError)  {  
+                                        if  (!hadError)  {
+                                            console.log("File transferred successfully!");
+                                        }
+                                        else {
+                                            console.log('FTP Error');
+                                            console.log(hadError);
+                                        }
                                     });
                                 })
                                 .evaluate(htmlAnalysis)

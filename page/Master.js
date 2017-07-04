@@ -20,13 +20,13 @@ class Master {
         this.ftpClient  =  new  JSFtp({  
             host:  this.ftpServerName,
             port: 21,
-            user:   "mrssam",
-            pass:   "mrssam"  // defaults to "@anonymous" 
+            user: "mrssam",
+            pass: "mrssam"  // defaults to "@anonymous" 
         });
 
         console.log("initFTP");
 
-        this.ftpClient.raw("mkd",  `/${this.siteID}`,  function(err,  data)  {    
+        this.ftpClient.raw("mkd",  `${this.siteID}`,  function(err,  data)  {    
             if  (err)  {
                 console.log(err);
             } else {
