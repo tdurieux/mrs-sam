@@ -32,7 +32,7 @@ class Master {
         mong_client.connect(this.dbURL, (err, db) => {
             if (!err) {
                 db.collection('Site', (err, siteColl) => {
-                    siteColl.insertOne({ _id: this.siteID, baseurl: this.url }, (err, res) => {
+                    siteColl.insertOne({ _id: this.siteID, baseurl: this.url, state: 'started' }, (err, res) => {
                         if (!err) {
                             var slaveCFG = {
                                 siteID: this.siteID,
@@ -52,13 +52,19 @@ class Master {
             }
         });
     }
+
+    stop() {
+
+    }
 }
 
 
 function startSlave(slaveCFG) {
+    this.slaves = [];
     for (var i = 0; i < slaveCFG.numberOfSlave; i++) {
         var show = false;
         var slave = new Slave(slaveCFG.siteID, slaveCFG.url, slaveCFG.rabbitMQServerName, slaveCFG.mongoServerName, slaveCFG.fileServerName, show);
+        this.slaves.push(slave);
         slave.start();
     }
 }

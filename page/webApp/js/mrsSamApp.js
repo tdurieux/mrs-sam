@@ -22,13 +22,15 @@
 
 
 
-    angular.module('mrsSamApp').controller('siteFormController', ['$scope', '$http', siteFormControllerFactory]);
+    angular.module('mrsSamApp').controller('siteFormController', ['$scope', '$http', 'siteService', siteFormControllerFactory]);
 
-    function siteFormControllerFactory($scope, $http) {
+    function siteFormControllerFactory($scope, $http, $siteService) {
         $scope.options = {
             url : "http://www.labri.fr",
             numberOfSlave : 1
         };
+
+        $scope.sites = $siteService.get();
 
         $scope.crawl = function(options) {
             $http.post('/site', options).then(function successCallback(response) {

@@ -27,9 +27,9 @@ class Slave {
 
     initSFTP() {
         this.sftpConfig = {
-            host:this.fileServerName,
-            username:'mrssam',
-            password:'mrssam'
+            host: this.fileServerName,
+            username: 'mrssam',
+            password: 'mrssam'
         };
         this.sftpClient = new SFTPClient(this.sftpConfig);
     }
@@ -53,6 +53,7 @@ class Slave {
                                 this.db = db;
                                 winston.info('PageTester is running!');
                                 this.ch.assertQueue(this.queue, { durable: false });
+                                var winston = require('winston');
                                 this.getMsg();
                             }
                         });
@@ -62,16 +63,22 @@ class Slave {
         });
     }
 
+    stop() {
+        this.stop = true;
+    }
+
     getMsg() {
-        this.ch.get(this.queue, { noAck: false }, (err, msgOrFalse) => {
-            if (err) {
-                setTimeout(() => {
-                    this.getMsg();
-                }, 2000);
-            } else {
-                this.handleMsg(msgOrFalse);
-            }
-        });
+        if (!this.stop) {
+            this.ch.get(this.queue, { noAck: false }, (err, msgOrFalse) => {
+                if (err) {
+                    setTimeout(() => {
+                        this.getMsg();
+                    }, 2000);
+                } else {
+                    this.handleMsg(msgOrFalse);
+                }
+            });
+        }
     }
 
     handleMsg(msgOrFalse) {
@@ -99,7 +106,7 @@ class Slave {
                                 .wait(2000)
                                 .screenshot()
                                 .then(buffer => {
-                                    this.sftpClient.putBuffer(buffer, `upload/${this.siteID}/${oid}.png`).then(() => {winston.info('file saved');});
+                                    this.sftpClient.putBuffer(buffer, `upload/${this.siteID}/${oid}.png`).then(() => { winston.info('file saved'); });
                                 })
                                 .then(() => {
                                     return nightmare.evaluate(htmlAnalysis).end();

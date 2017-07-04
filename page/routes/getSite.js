@@ -2,11 +2,11 @@ var mongo_client = require('mongodb').MongoClient;
 var ObjectID = require('mongodb').ObjectID;
 
 module.exports.init = function(mongoServerName, rabbitServerName, fileServerName, webServer) {
-    var db_url = `mongodb://${mongoServerName}:27017/mrs-sam-page`
+    var db_url = `mongodb://${mongoServerName}:27017/mrs-sam-page`;
     webServer.get('/site', function(req, res) {
             mongo_client.connect(db_url, (err, db) => {
                 if (!err) {
-                    db.collection("site", function(err, siteCollection) {
+                    db.collection('site', function(err, siteCollection) {
                         if (err) {
                             res.send(err).status(404).end();
                         } else {
@@ -24,11 +24,11 @@ module.exports.init = function(mongoServerName, rabbitServerName, fileServerName
                 }
             });
         })
-        .get('/test/:id', function(req, res) { //req.params.id
+        .get('/site/:id', function(req, res) { //req.params.id
             mongo_client.connect(db_url, (err, db) => {
                 if (!err) {
 
-                    db.collection("site", function(err, scenarioCollection) {
+                    db.collection('site', function(err, scenarioCollection) {
                         if (err) {
                             res.send(err).status(404).end();
                         } else {
