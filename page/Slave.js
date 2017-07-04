@@ -95,7 +95,7 @@ class Slave {
                             //this.
                             nightmare.goto(currentURL)
                                 .wait(2000)
-                                .screenshot(screenShotPath)
+                                .screenshot()
                                 .then(buffer => {
                                     this.ftpClient.put(buffer,  `/${this.siteID}/${oid}.png`,  function(hadError)  {  
                                         if  (!hadError)  console.log("File transferred successfully!");
