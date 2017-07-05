@@ -8,12 +8,12 @@ var SFTPClient = require('sftp-promises');
 var winston = require('winston');
 
 class Slave {
-    constructor(siteID, rabbitMQServer, mongoServer, fileServerName, show) {
+    constructor(siteID, serverNames, show) {
         this.siteID = siteID;
         this.queue = `urlOf${siteID}`;
-        this.rmq_url = `amqp://${rabbitMQServer}`;
-        this.db_url = `mongodb://${mongoServer}:27017/mrs-sam-page`;
-        this.fileServerName = fileServerName;
+        this.rmq_url = `amqp://${serverNames.rabbitServerName}`;
+        this.db_url = `mongodb://${serverNames.mongoServerName}:27017/mrs-sam-page`;
+        this.fileServerName = serverNames.fileServerName;
         this.show = show;
         this.ch = undefined;
         this.db = undefined;
@@ -49,6 +49,8 @@ class Slave {
             .then(recordedSite => {
                 winston.info('Slave is running!');
                 this.baseURI = new URI(recordedSite.baseurl);
+                winston.info(this.queue);
+                winston.info(this.rmq_url);
                 this.ch.assertQueue(this.queue, { durable: false });
                 this.isRunning = true;
                 this.getMsg();

@@ -2,15 +2,15 @@ var mongo_client = require('mongodb').MongoClient;
 var ObjectID = require('mongodb').ObjectID;
 var Master = require('../Master.js').Master;
 
-module.exports.init = function(mongoServerName, rabbitServerName, fileServerName, webServer) {
-    var db_url = `mongodb://${mongoServerName}:27017/mrs-sam-page`;
+module.exports.init = function(serverNames, webServer) {
+    var db_url = `mongodb://${serverNames.mongoServerName}:27017/mrs-sam-page`;
     var runningMasters = [];
     webServer.post('/site', function(req, res) {
         var options = req.body;
         var url = options.url;
         var numberOfSlave = options.numberOfSlave || 0;
 
-        var siteMaster = new Master(url, numberOfSlave, mongoServerName, rabbitServerName, fileServerName);
+        var siteMaster = new Master(url, numberOfSlave, serverNames);
         var siteID = siteMaster.siteID;
         siteMaster.start();
         runningMasters.push(siteMaster);

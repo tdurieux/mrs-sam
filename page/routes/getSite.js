@@ -1,8 +1,8 @@
 var mongo_client = require('mongodb').MongoClient;
 var ObjectID = require('mongodb').ObjectID;
 
-module.exports.init = function(mongoServerName, rabbitServerName, fileServerName, webServer) {
-    var db_url = `mongodb://${mongoServerName}:27017/mrs-sam-page`;
+module.exports.init = function(serverNames, webServer) {
+    var db_url = `mongodb://${serverNames.mongoServerName}:27017/mrs-sam-page`;
     webServer.get('/site', function(req, res) {
             mongo_client.connect(db_url, (err, db) => {
                 if (!err) {
@@ -22,6 +22,7 @@ module.exports.init = function(mongoServerName, rabbitServerName, fileServerName
                 } else {
                     res.send(err).status(500).end;
                 }
+                db.close();
             });
         })
         .get('/site/:id', function(req, res) { //req.params.id
@@ -44,6 +45,7 @@ module.exports.init = function(mongoServerName, rabbitServerName, fileServerName
                 } else {
                     res.send(err).status(500).end();
                 }
+                db.close();
             });
         })
 }
