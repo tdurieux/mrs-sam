@@ -18,7 +18,6 @@ class Master {
         this.initSFTP();
     }
 
-
     initSFTP() {
         this.sftpConfig = {
             host: this.fileServerName,
