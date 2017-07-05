@@ -26,8 +26,8 @@
 
     function siteFormControllerFactory($scope, $http) {
         $scope.options = {
-            url : "http://www.labri.fr",
-            numberOfSlave : 1
+            url: "http://www.labri.fr",
+            numberOfSlave: 1
         };
 
         $scope.crawl = function(options) {
@@ -40,13 +40,23 @@
 
     angular.module('mrsSamApp').controller('sitesViewController', ['$scope', '$http', 'siteService', sitesViewControllerFactory]);
 
-    function sitesViewControllerFactory($scope, $http, siteService) {
-        $scope.sites = siteService.get();
+    function sitesViewControllerFactory($scope, $http, $siteService) {
+        $scope.sites = $siteService.get();
 
-        $scope.stopCrawling = function (aSite) {
+        $scope.stopCrawling = function(aSite) {
             $http.post(`/site/${aSite._id}`).then(function successCallback(response) {
                 alert('site has been paused');
             }, function errorCallback(response) {});
+        }
+
+        $scope.getNumberOfCrawls = function(aSite) {
+            var result = $siteService.get({ id: aSite._id }, result => {
+                console.log(result);
+                var nop = result[0].numberOfPages;
+                alert(`Number of Crawled Pages : ${nop}`);
+
+            });
+
         }
     }
 
