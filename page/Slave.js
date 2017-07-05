@@ -8,9 +8,8 @@ var SFTPClient = require('sftp-promises');
 var winston = require('winston');
 
 class Slave {
-    constructor(siteID, baseURL, rabbitMQServer, mongoServer, fileServerName, show) {
+    constructor(siteID, rabbitMQServer, mongoServer, fileServerName, show) {
         this.siteID = siteID;
-        this.baseURI = new URI(baseURL);
         this.queue = `urlOf${siteID}`;
         this.rmq_url = `amqp://${rabbitMQServer}`;
         this.db_url = `mongodb://${mongoServer}:27017/mrs-sam-page`;
@@ -51,10 +50,20 @@ class Slave {
                                 winston.log(err);
                             } else {
                                 this.db = db;
-                                winston.info('PageTester is running!');
-                                this.ch.assertQueue(this.queue, { durable: false });
-                                this.isRunning = true;
-                                this.getMsg();
+                                db.collection('Site', (err, siteColl) => {
+                                    siteColl.findOne({ _id: this.siteID, state: 'started' }, (err, recoredSite) => {
+                                        if (!err && recoredSite) {
+                                            winston.info('Slave is running!');
+                                            this.baseURI = new URI(recoredSite.baseurl);
+                                            this.ch.assertQueue(this.queue, { durable: false });
+                                            this.isRunning = true;
+                                            this.getMsg();
+                                        } else {
+                                            winston.info('Slave cannot run as there is no started site');
+                                        }
+                                    });
+                                });
+
                             }
                         });
                     }
@@ -87,7 +96,7 @@ class Slave {
             var currentURL = msgContent.url;
             var fromURL = msgContent.from;
             var siteURL = msgContent.site;
-            winston.info(`Page Tester is consuming ${msgOrFalse.content.toString()}}`);
+            winston.info(`Slave is consuming ${msgOrFalse.content.toString()}}`);
 
 
             this.db.collection(`Pages_${this.siteID}`, (err, pageColl) => {
@@ -133,10 +142,10 @@ class Slave {
                                         url: currentURL,
                                         from: siteURL,
                                         siteID: this.siteID,
-                                        //hrefs: analysisResult.hrefs,
                                         body: analysisResult.hash
                                     };
-                                    pageColl.save(testedPage, null, (err) => {
+                                    pageColl.save(testedPage, null, () => {
+                                        winston.info('page is saved');
                                         this.getMsg();
                                     });
                                 })

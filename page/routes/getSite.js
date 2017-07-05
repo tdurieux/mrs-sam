@@ -14,7 +14,6 @@ module.exports.init = function(mongoServerName, rabbitServerName, fileServerName
                                 if (err) {
                                     res.send(err).status(500).end();
                                 } else {
-                                    console.log(sitesArray);
                                     res.send(sitesArray).status(200).end();
                                 }
                             });

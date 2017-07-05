@@ -38,7 +38,6 @@ class Master {
                         if (!err) {
                             var slaveCFG = {
                                 siteID: this.siteID,
-                                url: this.url,
                                 numberOfSlave: this.numberOfSlave,
                                 rabbitMQServerName: this.rabbitMQServerName,
                                 mongoServerName: this.mongoServerName,
@@ -79,7 +78,7 @@ class Master {
         mong_client.connect(this.dbURL, (err, db) => {
             if (!err) {
                 db.collection('Site', (err, siteColl) => {
-                    siteColl.update({ _id: this.siteID, baseurl: this.url}, {state: 'stopped' });
+                    siteColl.update({ _id: this.siteID, baseurl: this.url}, {baseurl:this.url, state: 'stopped' });
                 });
             } else {
                 winston.log(err);
@@ -92,7 +91,7 @@ class Master {
 function startSlave(slaveCFG) {
     for (var i = 0; i < slaveCFG.numberOfSlave; i++) {
         var show = false;
-        var slave = new Slave(slaveCFG.siteID, slaveCFG.url, slaveCFG.rabbitMQServerName, slaveCFG.mongoServerName, slaveCFG.fileServerName, show);
+        var slave = new Slave(slaveCFG.siteID, slaveCFG.rabbitMQServerName, slaveCFG.mongoServerName, slaveCFG.fileServerName, show);
         this.slaves.push(slave);
         slave.start();
     }
