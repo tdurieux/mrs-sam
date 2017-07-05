@@ -3,6 +3,7 @@ var ObjectID = require('mongodb').ObjectID;
 var SFTPClient = require('sftp-promises');
 var Slave = require('./Slave.js').Slave;
 var winston = require('winston');
+var amqp = require('amqplib/callback_api');
 
 class Master {
     constructor(url, numberOfSlave, mongoServerName, rabbitMQServerName, fileServerName) {
@@ -55,9 +56,34 @@ class Master {
     }
 
     stop() {
-        this.slaves.forEach(slave => { 
+        this.slaves.forEach(slave => {
             winston.info('slave is stopped!');
-            slave.stop(); 
+            slave.stop();
+        });
+
+        var queue = `urlOf${this.siteID}`;
+        amqp.connect(`amqp://${this.rabbitMQServerName}`, (err, conn) => {
+            if (err) {
+                winston.log(err);
+            } else {
+                conn.createChannel((err, ch) => {
+                    if (err) {
+                        winston.log(err);
+                    } else {
+                        ch.deleteQueue(queue);
+                    }
+                });
+            }
+        });
+
+        mong_client.connect(this.dbURL, (err, db) => {
+            if (!err) {
+                db.collection('Site', (err, siteColl) => {
+                    siteColl.update({ _id: this.siteID, baseurl: this.url}, {state: 'stopped' });
+                });
+            } else {
+                winston.log(err);
+            }
         });
     }
 }
@@ -77,7 +103,6 @@ function startSlave(slaveCFG) {
 
 function queueRootURL(siteID, baseURL, rabbitMQServerName) {
     var queue = `urlOf${siteID}`;
-    var amqp = require('amqplib/callback_api');
     amqp.connect(`amqp://${rabbitMQServerName}`, (err, conn) => {
         if (err) {
             winston.log(err);
