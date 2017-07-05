@@ -1,4 +1,4 @@
-var amqp = require('amqplib/callback_api');
+var amqp = require('amqplib'); ///callback_api');
 var URI = require('urijs');
 var Nightmare = require('nightmare');
 var htmlAnalysis = require('./htmlAnalysis.js');
@@ -33,43 +33,32 @@ class Slave {
         this.sftpClient = new SFTPClient(this.sftpConfig);
     }
 
-
-
     start() {
-        amqp.connect(this.rmq_url, (err, conn) => {
-            if (err) {
-                winston.log(err);
-            } else {
-                conn.createChannel((err, ch) => {
-                    if (err) {
-                        winston.log(err);
-                    } else {
-                        this.ch = ch;
-                        mong_client.connect(this.db_url, (err, db) => {
-                            if (err) {
-                                winston.log(err);
-                            } else {
-                                this.db = db;
-                                db.collection('Site', (err, siteColl) => {
-                                    siteColl.findOne({ _id: this.siteID, state: 'started' }, (err, recoredSite) => {
-                                        if (!err && recoredSite) {
-                                            winston.info('Slave is running!');
-                                            this.baseURI = new URI(recoredSite.baseurl);
-                                            this.ch.assertQueue(this.queue, { durable: false });
-                                            this.isRunning = true;
-                                            this.getMsg();
-                                        } else {
-                                            winston.info('Slave cannot run as there is no started site');
-                                        }
-                                    });
-                                });
-
-                            }
-                        });
-                    }
-                });
-            }
-        });
+        amqp.connect(this.rmq_url)
+            .then((conn) => {
+                return conn.createChannel();
+            })
+            .then(ch => {
+                this.ch = ch;
+                return mong_client.connect(this.db_url);
+            })
+            .then(db => {
+                this.db = db;
+                return db.collection('Site');
+            })
+            .then(siteColl => {
+                return siteColl.findOne({ _id: this.siteID, state: 'started' });
+            })
+            .then(recordedSite => {
+                winston.info('Slave is running!');
+                this.baseURI = new URI(recordedSite.baseurl);
+                this.ch.assertQueue(this.queue, { durable: false });
+                this.isRunning = true;
+                this.getMsg();
+            })
+            .catch(err => {
+                winston.info(err);
+            });
     }
 
     stop() {
@@ -78,15 +67,15 @@ class Slave {
 
     getMsg() {
         if (this.isRunning) {
-            this.ch.get(this.queue, { noAck: false }, (err, msgOrFalse) => {
-                if (err) {
+            this.ch.get(this.queue, { noAck: false })
+                .then(msgOrFalse => {
+                    this.handleMsg(msgOrFalse);
+                })
+                .catch(err => {
                     setTimeout(() => {
                         this.getMsg();
                     }, 2000);
-                } else {
-                    this.handleMsg(msgOrFalse);
-                }
-            });
+                });
         }
     }
 
