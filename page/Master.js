@@ -13,23 +13,8 @@ class Master {
         this.siteID = new ObjectID();
         this.dbURL = `mongodb://${this.serverNames.mongoServerName}:27017/mrs-sam-page`;
         this.slaves = [];
-<<<<<<< HEAD
-        this.initSFTP();
-    }
-
-    initSFTP() {
-        this.sftpConfig = {
-            host: this.fileServerName,
-            username: 'mrssam',
-            password: 'mrssam'
-        };
-        var sftp = new SFTPClient(this.sftpConfig);
-        sftp.mkdir(`upload/${this.siteID}`).then(() => { winston.info('directory created'); });
-
-=======
         initSFTP.call(this);
         winston.info('Master is created');
->>>>>>> upstream/master
     }
 
     start() {
