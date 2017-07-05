@@ -1,7 +1,9 @@
 var argv = require('yargs').usage('$0 server.js --mongo=[string] --rabbit=[string] --sftp=[string]').argv;
-var mongoServerName = argv.mongo || 'localhost';
-var rabbitServerName = argv.rabbit || 'localhost';
-var fileServerName = argv.sftp || 'localhost';
+var serverNames = {
+	mongoServerName : argv.mongo || 'localhost',
+	rabbitServerName : argv.rabbit || 'localhost',
+	fileServerName : argv.sftp || 'localhost'
+}
 
 var winston = require('winston');
 
@@ -33,7 +35,7 @@ var files = fs.readdirSync(RouteDir);
 files.forEach(function(file) {
     var filePath = path.resolve('./', RouteDir, file);
     var route = require(filePath);
-    route.init(mongoServerName, rabbitServerName, fileServerName, app);
+    route.init(serverNames, app);
 });
 
 
