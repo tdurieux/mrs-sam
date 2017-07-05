@@ -49,8 +49,7 @@ class Slave {
                 this.baseURI = new URI(recordedSite.baseurl);
                 this.ch.assertQueue(this.queue, { durable: true });
                 this.ch.prefetch(1);
-                var worker = newWorker(this);
-                this.ch.consume(this.queue, worker);
+                this.ch.consume(this.queue, msg => process.call(this, msg));
                 this.isRunning = true;
                 winston.info(`slave ${this.slaveId}: started`);
             })
@@ -64,34 +63,32 @@ class Slave {
     }
 }
 
-function newWorker(obj) {
-    return function(msg) {
-        var content = JSON.parse(msg.content.toString());
-        var currentURL = content.url;
-        var fromURL = content.from;
-        var siteURL = content.site;
-        winston.info(`slave ${obj.slaveId}: trying processing ${content.url}`);
+function process(msg) {
+    var content = JSON.parse(msg.content.toString());
+    var currentURL = content.url;
+    var fromURL = content.from;
+    var siteURL = content.site;
+    winston.info(`slave ${this.slaveId}: trying processing ${content.url}`);
 
-        var pageColl = obj.db.collection(`Pages_${obj.siteID}`);
-        pageColl.findOne({
-            url: currentURL,
-            from: fromURL,
-            site: siteURL,
-            siteID: obj.siteID
+    var pageColl = this.db.collection(`Pages_${this.siteID}`);
+    pageColl.findOne({
+        url: currentURL,
+        from: fromURL,
+        site: siteURL,
+        siteID: this.siteID
+    })
+        .then(recordedPage => {
+            if (recordedPage === null) {
+                winston.info(`slave ${this.slaveId}: starting processing ${content.url}`);
+                return crawlAndSave.call(this, currentURL, siteURL);
+            } else {
+                winston.info(`slave ${this.slaveId}: aborting processing ${content.url} ( already processed)`);
+            }
         })
-            .then(recordedPage => {
-                if (recordedPage === null) {
-                    winston.info(`slave ${obj.slaveId}: starting processing ${content.url}`);
-                    return crawlAndSave.call(obj, currentURL, siteURL);
-                } else {
-                    winston.info(`slave ${obj.slaveId}: aborting processing ${content.url} ( already processed)`);
-                }
-            })
-            .then(() => obj.ch.ack(msg))
-            .catch(err => {
-                winston.info(err);
-            });
-    };
+        .then(() => this.ch.ack(msg))
+        .catch(err => {
+            winston.info(err);
+        });
 }
 
 function uuidv4() {
