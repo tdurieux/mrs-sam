@@ -69,6 +69,7 @@ class Slave {
                     this.handleMsg(msgOrFalse);
                 })
                 .catch(err => {
+                    winston.log(err);
                     setTimeout(() => {
                         this.getMsg();
                     }, 2000);
