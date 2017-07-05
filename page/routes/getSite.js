@@ -26,26 +26,19 @@ module.exports.init = function(serverNames, webServer) {
             });
         })
         .get('/site/:id', function(req, res) { //req.params.id
-            mongo_client.connect(db_url, (err, db) => {
-                if (!err) {
-
-                    db.collection('Site', function(err, scenarioCollection) {
-                        if (err) {
-                            res.send(err).status(404).end();
-                        } else {
-                            scenarioCollection.find({ test_id: new ObjectID(req.params.id) }).toArray(function(err, scenarioArray) {
-                                if (err) {
-                                    res.send(err).status(500).end();
-                                } else {
-                                    res.send(scenarioArray).status(200).end();
-                                }
-                            });
+            mongo_client.connect(db_url).then(db => {
+                db.collection(`Pages_${req.params.id}`).count().then(nb => {
+                        var msg = {
+                            numberOfPages : nb
                         }
+                        res.send(JSON.stringify([msg])).status(200).end();
                     })
-                } else {
-                    res.send(err).status(500).end();
-                }
+                    .catch(err => {
+                        res.send(err).status(500).end();
+                    });
                 db.close();
+            }).catch(err => {
+                res.send(err).status(500).end();
             });
-        })
+        });
 }
