@@ -13,28 +13,26 @@ class Master {
         this.siteID = new ObjectID();
         this.dbURL = `mongodb://${this.serverNames.mongoServerName}:27017/mrs-sam-page`;
         this.slaves = [];
-        initSFTP.call(this);
-        winston.info('Master is created');
+        winston.info('master created');
     }
 
     start() {
-        mong_client.connect(this.dbURL)
-            .then(db => {
+        initSftp.call(this)
+            .then(() => {
+                return mong_client.connect(this.dbURL);
+            }).then(db => {
                 this.db = db;
                 return db.collection('Site').insertOne({ _id: this.siteID, baseurl: this.url, state: 'started' });
-            })
-            .then(() => {
+            }).then(() => {
                 startSlave.call(this);
                 queueRootURL.call(this);
-            })
-            .catch(logError);
-
-        winston.log('Master is started');
+                winston.info('master started');
+            }).catch(logError);
     }
 
     stop() {
         this.slaves.forEach(slave => {
-            winston.info('slave is stopped!');
+            winston.info(`slave ${slave.slaveId} has been stopped`);
             slave.stop();
         });
 
@@ -48,20 +46,19 @@ class Master {
             })
             .catch(logError);
 
-        this.db.collection('Site').update({ _id: this.siteID, baseurl: this.url }, { baseurl: this.url, state: 'stopped' }).catch(err => { winston.log(err); });
+        this.db.collection('Site').update({ _id: this.siteID, baseurl: this.url }, { baseurl: this.url, state: 'stopped' }).catch(logError);
     }
 }
 
-
-function initSFTP() {
+function initSftp() {
     this.sftpConfig = {
         host: this.serverNames.fileServerName,
         username: 'mrssam',
         password: 'mrssam',
         port: 2222
     };
-    var sftp = new SFTPClient(this.sftpConfig);
-    sftp.mkdir(`upload/${this.siteID}`).then(() => { winston.info('directory created'); });
+    winston.info(`creating directory upload/${this.siteID}`);
+    return new SFTPClient(this.sftpConfig).mkdir(`upload/${this.siteID}`);
 }
 
 function startSlave() {
@@ -92,7 +89,7 @@ function queueRootURL() {
 }
 
 function logError(err) {
-    winston.log(err);
+    winston.info(err);
 }
 
 module.exports.Master = Master;
