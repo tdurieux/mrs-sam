@@ -3,7 +3,6 @@ var ObjectID = require('mongodb').ObjectID;
 var Master = require('../Master.js').Master;
 
 module.exports.init = function(serverNames, webServer) {
-    var db_url = `mongodb://${serverNames.mongoServerName}:27017/mrs-sam-page`;
     var runningMasters = [];
     webServer.post('/site', function(req, res) {
         var options = req.body;

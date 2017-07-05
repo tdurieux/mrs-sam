@@ -23,7 +23,7 @@ class Master {
                 this.db = db;
                 return db.collection('Site').insertOne({ _id: this.siteID, baseurl: this.url, state: 'started' });
             })
-            .then(res => {
+            .then(() => {
                 startSlave.call(this);
                 queueRootURL.call(this);
             })
@@ -45,7 +45,6 @@ class Master {
             })
             .then(ch => {
                 ch.deleteQueue(queue);
-                conn.close();
             })
             .catch(logError);
 
@@ -87,7 +86,6 @@ function queueRootURL() {
             };
             ch.assertQueue(queue, { durable: false });
             ch.sendToQueue(queue, new Buffer(JSON.stringify(msg)), { persistent: false });
-            conn.close();
         })
         .catch(logError);
 }
