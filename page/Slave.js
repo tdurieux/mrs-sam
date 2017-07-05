@@ -20,7 +20,7 @@ class Slave {
 
         this.initSFTP();
 
-        winston.info('Slave is ok');
+        winston.info('Slave is created');
     }
 
 
@@ -35,7 +35,7 @@ class Slave {
 
     start() {
         amqp.connect(this.rmq_url)
-            .then((conn) => {
+            .then(conn => {
                 return conn.createChannel();
             })
             .then(ch => {
@@ -44,10 +44,7 @@ class Slave {
             })
             .then(db => {
                 this.db = db;
-                return db.collection('Site');
-            })
-            .then(siteColl => {
-                return siteColl.findOne({ _id: this.siteID, state: 'started' });
+                return db.collection('Site').findOne({ _id: this.siteID, state: 'started' });
             })
             .then(recordedSite => {
                 winston.info('Slave is running!');
@@ -88,87 +85,87 @@ class Slave {
             winston.info(`Slave is consuming ${msgOrFalse.content.toString()}}`);
 
 
-            this.db.collection(`Pages_${this.siteID}`, (err, pageColl) => {
-                if (!err) {
-                    pageColl.findOne({
-                        url: currentURL,
-                        from: fromURL,
-                        site: siteURL,
-                        siteID: this.siteID
-                    }, (err, recoredPage) => {
-                        if (err || !recoredPage) {
-                            var oid = ObjectID();
-                            //var screenShotPath = this.siteImgDirPath + "/" + oid + ".png";
-                            var nightmare = new Nightmare({ show: this.show });
-                            nightmare.goto(currentURL)
-                                .wait(2000)
-                                .screenshot()
-                                .then(buffer => {
-                                    this.sftpClient.putBuffer(buffer, `upload/${this.siteID}/${oid}.png`).then(() => { winston.info('file saved'); });
-                                })
-                                .then(() => {
-                                    return nightmare.evaluate(htmlAnalysis).end();
-                                })
-                                .then(analysisResult => {
-                                    analysisResult.hrefs.forEach(href => {
-                                        var msg = JSON.stringify({
-                                            url: href,
-                                            from: currentURL,
-                                            site: siteURL
-                                        });
-                                        if (!isMailTo(href) && !isPdfFile(href)) {
-                                            var uri = new URI(href);
-                                            if (uri.hostname() === this.baseURI.hostname()) {
-                                                this.ch.sendToQueue(this.queue,
-                                                    new Buffer(msg), { persistent: false }
-                                                );
-                                            }
+            var pageColl = this.db.collection(`Pages_${this.siteID}`);
 
-                                        }
-                                    });
-                                    var testedPage = {
-                                        _id: oid,
-                                        url: currentURL,
-                                        from: siteURL,
-                                        siteID: this.siteID,
-                                        body: analysisResult.hash
-                                    };
-                                    pageColl.save(testedPage, null, () => {
-                                        winston.info('page is saved');
-                                        this.getMsg();
-                                    });
-                                })
-                                .catch(e => {
-                                    winston.log(e);
-                                    this.getMsg();
-                                });
-
-                        } else {
-                            this.getMsg();
-                        }
-                    });
-                } else {
-                    winston.log(err);
-                }
-            });
-
-
+            pageColl.findOne({
+                url: currentURL,
+                from: fromURL,
+                site: siteURL,
+                siteID: this.siteID
+            })
+                .then(recordedPage => {
+                    if (recordedPage === null) {
+                        crawlAndSave.call(this, currentURL, siteURL);
+                    } else {
+                        this.getMsg();
+                    }
+                })
+                .catch(err => {
+                    winston.info(err);
+                });
         } else {
             setTimeout(() => {
                 this.getMsg();
             }, 2000);
         }
-
-
-        function isMailTo(href) {
-            return href.includes('mailto');
-        }
-
-        function isPdfFile(href) {
-            return href.endsWith('.pdf');
-        }
     }
-
 }
+
+function isMailTo(href) {
+    return href.includes('mailto');
+}
+
+function isPdfFile(href) {
+    return href.endsWith('.pdf');
+}
+
+
+function crawlAndSave(currentURL, siteURL) {
+    var oid = ObjectID();
+    //var screenShotPath = this.siteImgDirPath + "/" + oid + ".png";
+    var nightmare = new Nightmare({ show: this.show });
+    nightmare.goto(currentURL)
+        .wait(2000)
+        .screenshot()
+        .then(buffer => {
+            this.sftpClient.putBuffer(buffer, `upload/${this.siteID}/${oid}.png`).then(() => { winston.info('file saved'); });
+        })
+        .then(() => {
+            return nightmare.evaluate(htmlAnalysis).end();
+        })
+        .then(analysisResult => {
+            analysisResult.hrefs.forEach(href => {
+                var msg = JSON.stringify({
+                    url: href,
+                    from: currentURL,
+                    site: siteURL
+                });
+                if (!isMailTo(href) && !isPdfFile(href)) {
+                    var uri = new URI(href);
+                    if (uri.hostname() === this.baseURI.hostname()) {
+                        this.ch.sendToQueue(this.queue,
+                            new Buffer(msg), { persistent: false }
+                        );
+                    }
+                }
+            });
+            var testedPage = {
+                _id: oid,
+                url: currentURL,
+                from: siteURL,
+                siteID: this.siteID,
+                body: analysisResult.hash
+            };
+            this.db.collection(`Pages_${this.siteID}`).save(testedPage, null, () => {
+                winston.info('page is saved');
+                this.getMsg();
+            });
+        })
+        .catch(e => {
+            winston.info(e);
+            this.getMsg();
+        });
+}
+
 
 module.exports.Slave = Slave;
