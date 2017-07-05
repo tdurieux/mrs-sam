@@ -1,14 +1,15 @@
-var amqp = require('amqplib'); ///callback_api');
-var URI = require('urijs');
-var Nightmare = require('nightmare');
-var htmlAnalysis = require('./htmlAnalysis.js');
-var mong_client = require('mongodb').MongoClient;
-var ObjectID = require('mongodb').ObjectID;
-var SFTPClient = require('sftp-promises');
-var winston = require('winston');
+const amqp = require('amqplib');
+const URI = require('urijs');
+const Nightmare = require('nightmare');
+const htmlAnalysis = require('./htmlAnalysis.js');
+const mong_client = require('mongodb').MongoClient;
+const ObjectID = require('mongodb').ObjectID;
+const SFTPClient = require('sftp-promises');
+const winston = require('winston');
 
 class Slave {
     constructor(siteID, serverNames, show) {
+        this.slaveId = uuidv4();
         this.siteID = siteID;
         this.queue = `urlOf${siteID}`;
         this.rmq_url = `amqp://${serverNames.rabbitServerName}`;
@@ -17,12 +18,9 @@ class Slave {
         this.show = show;
         this.ch = undefined;
         this.db = undefined;
-
         this.initSFTP();
-
-        winston.info('Slave is created');
+        winston.info('slave: created');
     }
-
 
     initSFTP() {
         this.sftpConfig = {
@@ -47,16 +45,14 @@ class Slave {
                 return db.collection('Site').findOne({ _id: this.siteID, state: 'started' });
             })
             .then(recordedSite => {
-                winston.info('Slave is running!');
                 this.baseURI = new URI(recordedSite.baseurl);
-                winston.info(this.queue);
-                winston.info(this.rmq_url);
                 this.ch.assertQueue(this.queue, { durable: false });
                 this.isRunning = true;
                 this.getMsg();
+                winston.info(`slave ${this.slaveId}: started`);
             })
             .catch(err => {
-                winston.info(err);
+                winston.error(err);
             });
     }
 
@@ -71,7 +67,7 @@ class Slave {
                     this.handleMsg(msgOrFalse);
                 })
                 .catch(err => {
-                    winston.log(err);
+                    winston.error(err);
                     setTimeout(() => {
                         this.getMsg();
                     }, 2000);
@@ -85,11 +81,9 @@ class Slave {
             var currentURL = msgContent.url;
             var fromURL = msgContent.from;
             var siteURL = msgContent.site;
-            winston.info(`Slave is consuming ${msgOrFalse.content.toString()}}`);
-
+            winston.info(`slave ${this.slaveId}: trying processing ${msgContent.url}`);
 
             var pageColl = this.db.collection(`Pages_${this.siteID}`);
-
             pageColl.findOne({
                 url: currentURL,
                 from: fromURL,
@@ -98,13 +92,15 @@ class Slave {
             })
                 .then(recordedPage => {
                     if (recordedPage === null) {
+                        winston.info(`slave ${this.slaveId}: starting processing ${msgContent.url}`);
                         crawlAndSave.call(this, currentURL, siteURL);
                     } else {
+                        winston.info(`slave ${this.slaveId}: aborting processing ${msgContent.url} ( already processed)`);
                         this.getMsg();
                     }
                 })
                 .catch(err => {
-                    winston.info(err);
+                    winston.error(err);
                 });
         } else {
             setTimeout(() => {
@@ -112,6 +108,13 @@ class Slave {
             }, 2000);
         }
     }
+}
+
+function uuidv4() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
 }
 
 function isMailTo(href) {
@@ -122,7 +125,6 @@ function isPdfFile(href) {
     return href.endsWith('.pdf');
 }
 
-
 function crawlAndSave(currentURL, siteURL) {
     var oid = ObjectID();
     //var screenShotPath = this.siteImgDirPath + "/" + oid + ".png";
@@ -131,7 +133,9 @@ function crawlAndSave(currentURL, siteURL) {
         .wait(2000)
         .screenshot()
         .then(buffer => {
-            this.sftpClient.putBuffer(buffer, `upload/${this.siteID}/${oid}.png`).then(() => { winston.info('file saved'); });
+            this.sftpClient.putBuffer(buffer, `upload/${this.siteID}/${oid}.png`).then(() => {
+                winston.info(`slave ${this.slaveId}: screenshot of ${currentURL} saved`);
+            });
         })
         .then(() => {
             return nightmare.evaluate(htmlAnalysis).end();
@@ -160,15 +164,14 @@ function crawlAndSave(currentURL, siteURL) {
                 body: analysisResult.hash
             };
             this.db.collection(`Pages_${this.siteID}`).save(testedPage, null, () => {
-                winston.info('page is saved');
+                winston.info(`slave ${this.slaveId}: body of ${currentURL} saved`);
                 this.getMsg();
             });
         })
-        .catch(e => {
-            winston.info(e);
+        .catch(err => {
+            winston.error(err);
             this.getMsg();
         });
 }
-
 
 module.exports.Slave = Slave;
