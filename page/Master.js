@@ -57,7 +57,8 @@ function initSFTP() {
     this.sftpConfig = {
         host: this.serverNames.fileServerName,
         username: 'mrssam',
-        password: 'mrssam'
+        password: 'mrssam',
+        port: 2222
     };
     var sftp = new SFTPClient(this.sftpConfig);
     sftp.mkdir(`upload/${this.siteID}`).then(() => { winston.info('directory created'); });
@@ -84,8 +85,8 @@ function queueRootURL() {
                 site: this.url,
                 from: this.url
             };
-            ch.assertQueue(queue, { durable: false });
-            ch.sendToQueue(queue, new Buffer(JSON.stringify(msg)), { persistent: false });
+            ch.assertQueue(queue, { durable: true });
+            ch.sendToQueue(queue, new Buffer(JSON.stringify(msg)), { persistent: true });
         })
         .catch(logError);
 }
