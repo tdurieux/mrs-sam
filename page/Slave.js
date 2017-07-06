@@ -36,7 +36,10 @@ class Slave extends CrawlerElement {
                 this.baseURI = new URI(recordedSite.baseurl);
                 this.ch.assertQueue(this.queue, { durable: true });
                 this.ch.prefetch(1);
-                this.ch.consume(this.queue, msg => process.call(this, msg));
+                this.ch.consume(this.queue, msg => {
+                    if (msg !== null)
+                        process.call(this, msg);
+                });
                 this.isRunning = true;
                 winston.info(`slave ${this.slaveId}: started`);
             }).catch(err => {
