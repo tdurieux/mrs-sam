@@ -22,6 +22,19 @@ module.exports = {
         "semi": [
             "error",
             "always"
+        ],
+        "camelcase": 1,
+        "brace-style": [
+          1,
+          "1tbs"
+        ],
+        "block-spacing": [
+          1,
+          "always"
+        ],
+        "array-bracket-spacing": [
+          1,
+          "always"
         ]
     }
 };

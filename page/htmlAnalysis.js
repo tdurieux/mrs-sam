@@ -26,9 +26,9 @@ module.exports = function() {
 
     function grabSelector() {
         var selectors = new Array();
-        var a_links = document.getElementsByTagName('a');
-        for (var i = 0; i < a_links.length; i++) {
-            if (!isMailTo(a_links[i]) && !isPdfFile(a_links[i])) selectors.push(computeSelector(a_links[i]));
+        var aLinks = document.getElementsByTagName('a');
+        for (var i = 0; i < aLinks.length; i++) {
+            if (!isMailTo(aLinks[i]) && !isPdfFile(aLinks[i])) selectors.push(computeSelector(aLinks[i]));
         }
 
         /*var img_links = document.getElementsByTagName('img');
@@ -41,9 +41,9 @@ module.exports = function() {
 
     function grabHREF() {
         var hrefs = new Array();
-        var a_links = document.getElementsByTagName('a');
-        for (var i = 0; i < a_links.length; i++) {
-            if (a_links[i].href) hrefs.push(a_links[i].href);
+        var aLinks = document.getElementsByTagName('a');
+        for (var i = 0; i < aLinks.length; i++) {
+            if (aLinks[i].href) hrefs.push(aLinks[i].href);
         }
 
         /*var img_links = document.getElementsByTagName('img');
@@ -56,17 +56,17 @@ module.exports = function() {
 
     function grabForm() {
         var forms = new Array();
-        var form_tags = document.getElementsByTagName('form');
-        for (var i = 0; i < form_tags.length; i++) {
-            var form = { form_selector: computeSelector(form_tags[i]) };
+        var formTags = document.getElementsByTagName('form');
+        for (var i = 0; i < formTags.length; i++) {
+            var form = { formSelector: computeSelector(formTags[i]) };
             form.inputs = new Array();
-            var input_tags = form_tags[i].getElementsByTagName('input');
-            for (var j = 0; j < input_tags.length; j++) {
+            var inputTags = formTags[i].getElementsByTagName('input');
+            for (var j = 0; j < inputTags.length; j++) {
                 form.inputs.push({
-                    selector: computeSelector(input_tags[j]),
-                    name: undefined || input_tags[j].getAttribute('name'),
-                    value: undefined || input_tags[j].getAttribute('value'),
-                    type: undefined || input_tags[j].getAttribute('type')
+                    selector: computeSelector(inputTags[j]),
+                    name: undefined || inputTags[j].getAttribute('name'),
+                    value: undefined || inputTags[j].getAttribute('value'),
+                    type: undefined || inputTags[j].getAttribute('type')
                 });
             }
             forms.push(form);
@@ -95,11 +95,11 @@ module.exports = function() {
 
 
 
-    function isMailTo(a_link) {
-        return a_link.href.includes('mailto');
+    function isMailTo(aLink) {
+        return aLink.href.includes('mailto');
     }
 
-    function isPdfFile(a_link) {
-        return a_link.href.endsWith('.pdf');
+    function isPdfFile(aLink) {
+        return aLink.href.endsWith('.pdf');
     }
 };

@@ -10,11 +10,11 @@ var winston = require('winston');
 var express = require('express');
 var path = require('path');
 var bodyParser = require('body-parser');
-var application_root = __dirname;
+var applicationRoot = __dirname;
 var app = express();
 
 //files for HTML pages
-app.use(express.static(path.join(application_root, './webApp')));
+app.use(express.static(path.join(applicationRoot, './webApp')));
 app.use(bodyParser.json()); // to support JSON-encoded bodies
 app.use(bodyParser.urlencoded({ // to support URL-encoded bodies
     extended: true
