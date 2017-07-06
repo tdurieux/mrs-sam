@@ -7,7 +7,7 @@ class CrawlerNode {
         this.serverNames = serverNames;
         this.sftpClient = new SftpClient({
             var host = 'localhost';
-            var port = '22';
+            var port = '2222';
             var username = 'mrssam';
             var password = 'mrssam';
         });
