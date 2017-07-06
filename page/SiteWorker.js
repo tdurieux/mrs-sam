@@ -6,17 +6,17 @@ const MongoClient = require('mongodb').MongoClient;
 const ObjectId = require('mongodb').ObjectID;
 const winston = require('winston');
 
-const CrawlerElement = require('./CrawlerElement.js').CrawlerElement;
+const CrawlerNode = require('./CrawlerNode.js').CrawlerNode;
 
-class Slave extends CrawlerElement {
+class SiteWorker extends CrawlerNode {
 
     constructor(siteId, serverNames, show) {
         super(siteId, serverNames);
         this.show = show;
-        this.slaveId = uuidv4();
+        this.workerId = uuidv4();
         this.queue = `urlOf${siteId}`;
         this.pageCollectionName = `Pages_${siteId}`;
-        winston.info(`slave ${this.slaveId}: created`);
+        winston.info(`slave ${this.workerId}: created`);
     }
 
     start() {
@@ -41,7 +41,7 @@ class Slave extends CrawlerElement {
                         process.call(this, msg);
                 });
                 this.isRunning = true;
-                winston.info(`slave ${this.slaveId}: started`);
+                winston.info(`SiteWorker ${this.workerId}: started`);
             }).catch(err => {
                 winston.info(err);
             });
@@ -54,7 +54,7 @@ class Slave extends CrawlerElement {
 
 function process(msg) {
     var content = JSON.parse(msg.content.toString());
-    winston.info(`slave ${this.slaveId}: trying processing ${content.url}`);
+    winston.info(`SiteWorker ${this.workerId}: trying processing ${content.url}`);
     this.db.collection(this.pageCollectionName).findOne({
         url: content.url,
         from: content.from,
@@ -62,10 +62,10 @@ function process(msg) {
         siteID: this.siteID
     }).then(recordedPage => {
         if (recordedPage === null) {
-            winston.info(`slave ${this.slaveId}: starting processing ${content.url}`);
+            winston.info(`SiteWorker ${this.workerId}: starting processing ${content.url}`);
             return crawlAndSave.call(this, content.url, content.site);
         } else {
-            winston.info(`slave ${this.slaveId}: aborting processing ${content.url} ( already processed)`);
+            winston.info(`SiteWorker ${this.workerId}: aborting processing ${content.url} ( already processed)`);
         }
     }).then(() => {
         this.ch.ack(msg);
@@ -93,7 +93,7 @@ function crawlAndSave(currentURL, siteURL) {
     var oid = ObjectId();
     var nightmare = new Nightmare({ show: this.show });
     return nightmare.goto(currentURL).wait(2000).screenshot().then(buffer => {
-        winston.info(`slave ${this.slaveId}: saving screenshot of ${currentURL}`);
+        winston.info(`SiteWorker ${this.workerId}: saving screenshot of ${currentURL}`);
         return this.sftpClient.putBuffer(buffer, `${this.folder}/${oid}.png`);
     }).then(() => {
         return nightmare.evaluate(htmlAnalysis).end();
@@ -121,11 +121,11 @@ function crawlAndSave(currentURL, siteURL) {
             body: analysisResult.hash
         };
         this.db.collection(this.pageCollectionName).save(testedPage, null, () => {
-            winston.info(`slave ${this.slaveId}: body of ${currentURL} saved`);
+            winston.info(`SiteWorker ${this.workerId}: body of ${currentURL} saved`);
         });
     }).catch(err => {
         winston.info(err);
     });
 }
 
-module.exports.Slave = Slave;
+module.exports.SiteWorker = SiteWorker;

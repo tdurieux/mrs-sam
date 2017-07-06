@@ -26,8 +26,8 @@
 
     function siteFormControllerFactory($scope, $http) {
         $scope.options = {
-            url: "http://www.labri.fr",
-            numberOfSlave: 1
+            url: "http://localhost:8080",
+            numberOfSiteWorkers: 1
         };
 
         $scope.crawl = function(options) {

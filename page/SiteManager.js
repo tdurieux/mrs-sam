@@ -3,17 +3,17 @@ const ObjectId = require('mongodb').ObjectID;
 const winston = require('winston');
 const amqp = require('amqplib');
 
-const Slave = require('./Slave.js').Slave;
-const CrawlerElement = require('./CrawlerElement.js').CrawlerElement;
+const SiteWorker = require('./SiteWorker.js').SiteWorker;
+const CrawlerNode = require('./CrawlerNode.js').CrawlerNode;
 
-class Master extends CrawlerElement {
+class SiteManager extends CrawlerNode {
 
-    constructor(url, numberOfSlaves, serverNames) {
+    constructor(url, numberOfSiteWorkers, serverNames) {
         super(new ObjectId(), serverNames);
         this.url = url;
-        this.slaves = [];
-        this.numberOfSlaves = numberOfSlaves;
-        winston.info('master created');
+        this.workers = [];
+        this.numberOfSiteWorkers = numberOfSiteWorkers;
+        winston.info('SiteManager created');
     }
 
     start() {
@@ -28,16 +28,16 @@ class Master extends CrawlerElement {
                 state: 'started'
             });
         }).then(() => {
-            startSlave.call(this);
+            startWorkers.call(this);
             queueRootURL.call(this);
-            winston.info('master started');
+            winston.info('SiteManager started');
         }).catch(logError);
     }
 
     stop() {
-        this.slaves.forEach(slave => {
-            winston.info(`slave ${slave.slaveId} has been stopped`);
-            slave.stop();
+        this.workers.forEach(worker => {
+            winston.info(`worker ${worker.workerId} has been stopped`);
+            worker.stop();
         });
 
         amqp.connect(this.rmqUrl)
@@ -55,12 +55,12 @@ class Master extends CrawlerElement {
     }
 }
 
-function startSlave() {
-    for (var i = 0; i < this.numberOfSlaves; i++) {
+function startWorkers() {
+    for (var i = 0; i < this.numberOfSiteWorkers; i++) {
         var show = false;
-        var slave = new Slave(this.siteId, this.serverNames, show);
-        this.slaves.push(slave);
-        slave.start();
+        var worker = new SiteWorker(this.siteId, this.serverNames, show);
+        this.workers.push(worker);
+        worker.start();
     }
 }
 
@@ -85,4 +85,4 @@ function logError(err) {
     winston.info(err);
 }
 
-module.exports.Master = Master;
+module.exports.SiteManager = SiteManager;
