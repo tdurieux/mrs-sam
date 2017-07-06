@@ -12,7 +12,7 @@ services:
     image: "atmoz/sftp"
     command: mrssam:mrssam:::upload
     ports:
-      - "2222:22" 
+      - "22:22" 
   master:
     build: .
     ports:

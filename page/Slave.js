@@ -27,7 +27,7 @@ class Slave {
             host: this.fileServerName,
             username: 'mrssam',
             password: 'mrssam',
-            port: 2222
+            port: 22
         };
         this.sftpClient = new SFTPClient(this.sftpConfig);
     }

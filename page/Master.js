@@ -55,7 +55,7 @@ function initSftp() {
         host: this.serverNames.fileServerName,
         username: 'mrssam',
         password: 'mrssam',
-        port: 2222
+        port: 22
     };
     winston.info(`creating directory upload/${this.siteID}`);
     return new SFTPClient(this.sftpConfig).mkdir(`upload/${this.siteID}`);
