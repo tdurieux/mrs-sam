@@ -8,11 +8,11 @@ const CrawlerElement = require('./CrawlerElement.js').CrawlerElement;
 
 class Master extends CrawlerElement {
 
-    constructor(url, numberOfSlave, serverNames) {
+    constructor(url, numberOfSlaves, serverNames) {
         super(new ObjectId(), serverNames);
         this.url = url;
         this.slaves = [];
-        this.numberOfSlave = numberOfSlave;
+        this.numberOfSlaves = numberOfSlaves;
         winston.info('master created');
     }
 
@@ -48,17 +48,15 @@ class Master extends CrawlerElement {
             }).catch(logError);
 
         this.db.collection('Site').update({
-            _id: this.siteId,
-            baseurl: this.url
+            _id: this.siteId
         },{
-            baseurl: this.url,
             state: 'stopped'
         }).catch(logError);
     }
 }
 
 function startSlave() {
-    for (var i = 0; i < this.numberOfSlave; i++) {
+    for (var i = 0; i < this.numberOfSlaves; i++) {
         var show = false;
         var slave = new Slave(this.siteId, this.serverNames, show);
         this.slaves.push(slave);
