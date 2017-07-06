@@ -1,4 +1,4 @@
-const argv = require('yargs').usage('$0 slaveCLI.js --master=[string] --oid=[string] --show=[string]').argv;
+const argv = require('yargs').usage('$0 slaveCLI.js --master=[string] --show=[string]').argv;
 const serverNames = {
     mongoServerName : argv.master || 'localhost',
     rabbitServerName : argv.master || 'localhost',

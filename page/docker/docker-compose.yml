@@ -9,10 +9,10 @@ services:
     ports:
       - "5672:5672"
   sftp:
-    image: "atmoz/sftp"
+    image: "xblanc/sftp"
     command: mrssam:mrssam:::upload
     ports:
-      - "2222:22" 
+      - "2222:2222" 
   master:
     build: .
     ports:

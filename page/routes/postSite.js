@@ -8,8 +8,8 @@ module.exports.init = function(serverNames, webServer) {
     webServer.post('/site', function(req, res) {
         var options = req.body;
         var url = options.url;
-        var numberOfSlaves = options.numberOfSlaves || 0;
-        var manager = new SiteManager(url, numberOfSlaves, serverNames);
+        var numberOfSiteWorkers = options.numberOfSiteWorkers || 0;
+        var manager = new SiteManager(url, numberOfSiteWorkers, serverNames);
         manager.start();
         runningManagers.push(manager);
         res.send(`Test request has been received, the ID is ${manager.siteId}.`);
