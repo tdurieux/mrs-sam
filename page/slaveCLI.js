@@ -5,7 +5,7 @@ const serverNames = {
     fileServerName : argv.master || 'localhost'
 };
 const ObjectID = require('mongodb').ObjectID;
-const mong_client = require('mongodb').MongoClient;
+const MongoClient = require('mongodb').MongoClient;
 const show = argv.show || false;
 const Slave = require('./Slave.js').Slave;
 const readline = require('readline');
@@ -20,7 +20,7 @@ if (argv.oid)
 
 if (!oid) {
     console.log('Active crawlings:');
-    mong_client.connect(`mongodb://${serverNames.mongoServerName}:27017/mrs-sam-page`).then(db => {
+    MongoClient.connect(`mongodb://${serverNames.mongoServerName}:27017/mrs-sam-page`).then(db => {
         db.collection('Site').find({ state: 'started' }).toArray((err, res) => {
             res.forEach((val, idx) => {
                 console.log(`${idx}: ${val._id} (${val.baseurl})`);
