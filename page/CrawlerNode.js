@@ -6,10 +6,10 @@ class CrawlerNode {
         this.siteId = siteId;
         this.serverNames = serverNames;
         this.sftpClient = new SftpClient({
-            host : 'localhost';
-            port : '2222';
-            username : 'mrssam';
-            password : 'mrssam';
+            host : 'localhost',
+            port : '2222',
+            username : 'mrssam',
+            password : 'mrssam'
         });
         this.dbUrl = `mongodb://${serverNames.mongoServerName}:27017/mrs-sam-page`;
         this.rmqUrl = `amqp://${serverNames.rabbitServerName}`;
