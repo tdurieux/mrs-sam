@@ -1,9 +1,9 @@
 var argv = require('yargs').usage('$0 server.js --mongo=[string] --rabbit=[string] --sftp=[string]').argv;
 var serverNames = {
-	mongoServerName : argv.mongo || 'localhost',
-	rabbitServerName : argv.rabbit || 'localhost',
-	fileServerName : argv.sftp || 'localhost'
-}
+    mongoServerName : argv.mongo || 'localhost',
+    rabbitServerName : argv.rabbit || 'localhost',
+    fileServerName : argv.sftp || 'localhost'
+};
 
 var winston = require('winston');
 
@@ -12,7 +12,6 @@ var path = require('path');
 var bodyParser = require('body-parser');
 var application_root = __dirname;
 var app = express();
-
 
 //files for HTML pages
 app.use(express.static(path.join(application_root, './webApp')));
@@ -26,8 +25,6 @@ app.use(function(req, res, next) {
     next();
 });
 
-
-
 var fs = require('fs');
 var RouteDir = 'routes';
 var files = fs.readdirSync(RouteDir);
@@ -38,9 +35,6 @@ files.forEach(function(file) {
     route.init(serverNames, app);
 });
 
-
-
-
 app.listen(8080, function() {
-    winston.info('Mrs Sam Page is listening on port 8080!');
+    winston.info('Mrs-Sam listening on port 8080');
 });

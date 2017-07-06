@@ -1,18 +1,18 @@
 version: '2'
 services:
-  mongo: 
+  mongo:
     image: "mongo:3.0"
     ports:
       - "27017:27017"
   rabbit:
     image: "rabbitmq:3"
-    ports: 
+    ports:
       - "5672:5672"
   sftp:
     image: "atmoz/sftp"
     command: mrssam:mrssam:::upload
     ports:
-      - "22:22" 
+      - "2222:22" 
   master:
     build: .
     ports:
