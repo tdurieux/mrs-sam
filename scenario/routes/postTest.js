@@ -2,7 +2,7 @@ module.exports.init = function(ws, db, ObjectID) {
     ws.post('/test', function(req, res) {
         var options = req.body;
         //options.map = {active: false};
-        options.crawler.show = false;
+        options.crawler.show = true;
         options.diff = { active: false };
         options.replay = { active: false };
 
