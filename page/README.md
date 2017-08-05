@@ -18,7 +18,7 @@ Go to the page/docker directory and run:
 
 Then run:
 
-	docker-compose run 
+	docker-compose up 
 
 Mrs-Sam Page is then running !
 
